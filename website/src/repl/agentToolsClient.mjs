@@ -6,8 +6,9 @@
 // Серверные тулзы (searchDocs, getExamples) сюда НЕ входят — они чистые функции и считаются
 // на сервере (api/chat.ts). Здесь — только то, что требует окна Bulka.
 
-import { soundMap, startRecording, stopRecording } from '@strudel/webaudio';
+import { soundMap } from '@strudel/webaudio';
 import { $strudel_log_history } from './components/useLogger.jsx';
+import { beginRecording, endRecording } from './recordingState.mjs';
 
 // Список клиентских тулзов (для маршрутизации: клиент vs сервер).
 export const CLIENT_TOOL_NAMES = [
@@ -150,21 +151,19 @@ export function execClientTool(editor, name, args = {}) {
       return { ok: true, message: '📋 Консоль прочитана', data };
     }
     case 'startRecording': {
-      try { startRecording(); } catch (e) { /* нет аудио — игнор */ }
+      beginRecording(); // через общий стор → в UI загорается индикатор записи
       return { ok: true, message: '🔴 Запись начата', data: 'Запись аудио-выхода начата. Останови stopRecording.' };
     }
     case 'stopRecording': {
-      try { stopRecording(titleFilename(editor.code)); } catch (e) { /* игнор */ }
+      endRecording(titleFilename(editor.code));
       return { ok: true, message: '⏹ Запись сохранена', data: 'Запись остановлена и сохранена в WAV.' };
     }
     case 'recordSeconds': {
       const sec = Math.max(1, Math.min(3600, Number(args.seconds) || 8));
       editor.evaluate(); // убедиться, что играет
       const fname = titleFilename(editor.code);
-      try {
-        startRecording();
-        setTimeout(() => { try { stopRecording(fname); } catch (e) {} }, sec * 1000);
-      } catch (e) { /* игнор */ }
+      beginRecording();
+      setTimeout(() => endRecording(fname), sec * 1000);
       return { ok: true, message: `🔴 Запись ${sec}с`, data: `Записываю ${sec} секунд; WAV сохранится автоматически.` };
     }
     default:
