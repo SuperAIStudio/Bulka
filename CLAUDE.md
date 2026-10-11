@@ -24,6 +24,12 @@ Bulka — squash-снимок, **общего git-предка с Codeberg не�
 - **Фичи Bulka в движке портируются ВПЕРЁД вручную**: запись (`startRecording/stopRecording/isRecording` + `encodeWAV` в `superdough`) и master-volume. Новый пакет для REPL подключать в `website/package.json` + в `evalScope` (`website/src/repl/util.mjs`).
 - Приземление на `main`: `git checkout main; git read-tree --reset -u strudel-sync; git commit`.
 - upstream remote: `https://codeberg.org/uzu/strudel.git`.
+- После синка: `node website/scripts/sync-en-docs.mjs` (английские страницы — оригиналы апстрима), `pnpm jsdoc-json` + `pnpm doc-ru` (справка), `node website/scripts/build-docs-index.js`.
+
+## 🔴 Два языка: русский на корне, английский под `/en/`
+- Язык страницы — по URL (`website/src/i18n/lang.mjs`). Строки интерфейса — только через `t('ключ')` из `website/src/i18n`, ключ сразу в `ru.mjs` и `en.mjs` (тест `test/i18n.test.mjs` сверяет оба словаря).
+- Доки: `website/src/pages/en/**` — оригиналы апстрима (скрипт `sync-en-docs.mjs`, вручную не править) плюс переводы страниц Bulka, которых в апстриме нет. Новая страница Bulka = русская версия + английская в `pages/en/`, пункт в обоих меню `SIDEBAR.ru` / `SIDEBAR.en` (`website/src/config.ts`).
+- Посты блога на английском — `website/src/content/blog/en/` с `lang: en`.
 
 ## AI-агент
 - Системный промпт: `website/src/repl/ai-agent/system-prompt.ts`; база знаний: `.../knowledge.ts`; инструменты: `.../tools.ts`.
@@ -39,5 +45,5 @@ Bulka — squash-снимок, **общего git-предка с Codeberg не�
 bulka.app проксируется через RU-nginx (Vercel недоступен из РФ напрямую). Если домен отдаёт 403 при живом `*.vercel.app` — это domain fronting: в конфиге nginx `proxy_set_header Host` должен совпадать с `proxy_ssl_name` (алиас `bulka-ru.vercel.app`).
 
 ## Конвенции
-- Интерфейс и документация — на русском. Названия функций/кода — английские.
+- Интерфейс и документация — на русском и английском (см. «Два языка»). Названия функций/кода — английские.
 - Новые страницы доков: `layout: MainLayout.astro`, компоненты `MiniRepl`/`JsDoc`, регистрировать в `website/src/config.ts`.

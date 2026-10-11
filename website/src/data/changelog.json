@@ -13,6 +13,15 @@
         "type": "feat",
         "typeLabel": "Новые возможности",
         "emoji": "✨",
+        "description": "English version at /en/ — upstream English docs (59 pages, sync script), Bulka pages translated (20), UI dictionary ru/en with parity test, English reference and agent search, blog/RSS/feed/whatsnew per language, language switch in REPL and docs, hreflang; fixes: RU blog dates, RSS titled Strudel, /workshop redirect, false feed TOC, hydra/api link, outdated agent/community/themes facts",
+        "scope": "i18n",
+        "author": "Nerual Dreming",
+        "hash": "9a0eb9ef3"
+      },
+      {
+        "type": "feat",
+        "typeLabel": "Новые возможности",
+        "emoji": "✨",
         "description": "every window capability as an MCP tool (49 tools: patterns, share, feed, volume, undo, export WAV, samples, prebake, settings, AI provider, panel, reference, recordings); playMusic reports code errors and locked audio; restore lost selectText/getSelection",
         "scope": "mcp",
         "author": "Nerual Dreming",
