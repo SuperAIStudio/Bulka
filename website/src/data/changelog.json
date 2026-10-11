@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "docs",
+        "typeLabel": "Документация",
+        "emoji": "📚",
+        "description": "CLAUDE.md — two languages, post-sync steps",
+        "scope": null,
+        "author": "Nerual Dreming",
+        "hash": "addb057e2"
+      },
+      {
         "type": "feat",
         "typeLabel": "Новые возможности",
         "emoji": "✨",

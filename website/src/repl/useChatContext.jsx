@@ -12,6 +12,7 @@ import { soundMap } from '@strudel/webaudio';
 import { $strudel_log_history } from './components/useLogger.jsx';
 import { execClientTool } from './agentToolsClient.mjs';
 import { getSelectedCode } from './editorSelection.mjs';
+import { recordDone, recordFailed, recordModel } from '../hub/bulkaHub.mjs';
 import { currentLang, t } from '../i18n/index.mjs';
 
 // Бесплатный AI БЕЗ авторизации/ключа: OVHcloud AI Endpoints (OpenAI-совместимый,
@@ -587,6 +588,8 @@ export function useChatContext(replContext) {
             });
           }
 
+          recordDone('agent_reply');
+          recordModel(`${aiProvider} ${aiModel}`);
           // Done with free
           setIsLoading(false);
           return;
@@ -780,11 +783,14 @@ export function useChatContext(replContext) {
             return updated;
           });
         }
+        recordDone('agent_reply');
+        recordModel(`${aiProvider} ${aiModel}`);
       } catch (err) {
         if (err.name === 'AbortError') {
           console.log('[Chat] Aborted');
         } else {
           console.error('[Chat] Error:', err);
+          recordFailed('agent_reply', err.message);
           setError(err.message);
           // Remove empty assistant message
           setMessages((prev) => prev.filter((m) => m.content));

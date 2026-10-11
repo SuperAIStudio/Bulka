@@ -9,6 +9,7 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { $featuredPatterns /* , loadDBPatterns */ } from '@src/user_pattern_utils.mjs';
 import { nanoid } from 'nanoid';
 import { t } from '../i18n/index.mjs';
+import { recordDone, recordFailed } from '../hub/bulkaHub.mjs';
 
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
@@ -180,6 +181,13 @@ function shareBase() {
 }
 
 export async function shareCode(codeToShare, isPublic = true) {
+  const result = await createShareLink(codeToShare, isPublic);
+  if (result.success) recordDone('share');
+  else recordFailed('share', result.error);
+  return result;
+}
+
+async function createShareLink(codeToShare, isPublic) {
   try {
     // Validate code first
     if (!isValidCode(codeToShare)) {

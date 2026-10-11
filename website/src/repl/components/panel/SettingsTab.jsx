@@ -10,7 +10,9 @@ import { DEFAULT_MAX_POLYPHONY, setMaxPolyphony, setMultiChannelOrbits } from '@
 import { ActionButton, SpecialActionButton } from '../button/action-button.jsx';
 import { exportScript, ImportPrebakeScriptButton } from './ImportPrebakeScriptButton.jsx';
 import { PrebakeCodeMirror } from '../../prebakeCodeMirror.mjs';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { getBulkaHub } from '../../../hub/bulkaHub.mjs';
+import { TelemetryPreview } from '../TelemetryConsent';
 import { McpPanel } from './McpPanel.jsx';
 import { t } from '../../../i18n/index.mjs';
 
@@ -116,6 +118,35 @@ function PrebakeEditor() {
         value={includePrebakeScriptInShare}
       />
     </div>
+  );
+}
+
+function TelemetrySetting() {
+  const hub = getBulkaHub();
+  const [on, setOn] = useState(() => !!hub?.telemetryOn());
+  const [preview, setPreview] = useState(false);
+  if (!hub) return null;
+  return (
+    <FormItem label={t('telemetry.title')}>
+      <Checkbox
+        label={t('telemetry.checkbox')}
+        value={on}
+        onChange={(cbEvent) => {
+          if (hub.state.acknowledged) hub.setTelemetry(cbEvent.target.checked);
+          else hub.acknowledge(cbEvent.target.checked);
+          setOn(hub.telemetryOn());
+        }}
+      />
+      <p className="text-xs opacity-70">{t('telemetry.about')}</p>
+      <button
+        type="button"
+        className="text-xs underline opacity-70 hover:opacity-100 text-left"
+        onClick={() => setPreview(!preview)}
+      >
+        {t('telemetry.what')}
+      </button>
+      {preview && <TelemetryPreview hub={hub} />}
+    </FormItem>
   );
 }
 
@@ -356,6 +387,7 @@ export function SettingsTab({ started }) {
         />
       </FormItem>
       <FormItem label={t('settings.zen')}>{t('settings.zenHint')}</FormItem>
+      <TelemetrySetting />
       <FormItem label={t('settings.reset')}>
         <SpecialActionButton
           onClick={() => {

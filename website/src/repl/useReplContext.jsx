@@ -7,6 +7,7 @@ This program is free software: you can redistribute it and/or modify it under th
 import { code2hash, getPerformanceTimeSeconds, logger, silence } from '@strudel/core';
 import { markAudioUnlocked } from './audioUnlock.mjs';
 import { applyReferenceLanguage } from '../i18n/referenceLocale.mjs';
+import { recordDone, recordFailed } from '../hub/bulkaHub.mjs';
 import { getDrawContext } from '@strudel/draw';
 import { evaluate, transpiler } from '@strudel/transpiler';
 import {
@@ -108,7 +109,9 @@ export function useReplContext() {
         }
       },
       beforeEval: () => audioReady,
+      onEvalError: (err) => recordFailed('pattern_play', err?.message),
       afterEval: (all) => {
+        recordDone('pattern_play');
         const { code } = all;
         //post to iframe parent (like Udels) if it exists...
         window.parent?.postMessage(code);
@@ -397,15 +400,23 @@ stack(
       maxPolyphony,
       multiChannelOrbits,
       downloadName,
-    ).finally(async () => {
-      const { maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
-      initAudioOnFirstClick({
-        maxPolyphony,
-        audioDeviceName,
-        multiChannelOrbits: parseBoolean(multiChannelOrbits),
+    )
+      .then(
+        () => recordDone('export'),
+        (e) => {
+          recordFailed('export', e?.message);
+          throw e;
+        },
+      )
+      .finally(async () => {
+        const { maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
+        initAudioOnFirstClick({
+          maxPolyphony,
+          audioDeviceName,
+          multiChannelOrbits: parseBoolean(multiChannelOrbits),
+        });
+        editorRef.current.repl.scheduler.stop();
       });
-      editorRef.current.repl.scheduler.stop();
-    });
   };
   const handleShuffle = async () => {
     const patternData = await getRandomTune();

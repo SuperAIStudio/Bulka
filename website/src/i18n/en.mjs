@@ -363,4 +363,11 @@ export default {
   'summary.playing': 'Playback started',
   'summary.playingAuto': 'Playback started (auto)',
   'summary.toolError': 'Tool error',
+  'telemetry.title': 'Anonymous statistics',
+  'telemetry.about':
+    'Helps us see what is used and what breaks: how many pattern runs, recordings, exports and AI agent replies, which errors happened (without details), the interface language, OS and browser. Nothing personal: no code, no prompts, no keys, no file names. You can turn it off in the settings.',
+  'telemetry.checkbox': 'Send anonymous usage statistics',
+  'telemetry.what': 'What is sent',
+  'telemetry.done': 'Done',
+  'telemetry.previewInstall': 'a random id of this install',
 };

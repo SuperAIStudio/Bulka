@@ -38,7 +38,7 @@ Bulka — squash-снимок, **общего git-предка с Codeberg не�
 - Бесплатный провайдер (`'free'`) — **OVHcloud AI Endpoints**, OpenAI-совместимый, вызывается **прямым fetch из браузера** в `website/src/repl/useChatContext.jsx` (без ключа/регистрации, минуя сервер и RU-прокси — IP=юзера). Лимит бесплатного тарифа 2 запроса/мин на IP. Другие бесплатные варианты (proof-of-work / вход в аккаунт / Turnstile-капча) не подошли. Doc-страница: `website/src/pages/learn/free-ai.mdx`.
 
 ## Supabase (сохранение/шеринг паттернов)
-- Клиент — `website/src/repl/util.mjs` (+ SSR в `website/src/pages/index.astro`), таблица `code_v1`, RLS на anon select/insert/update.
+- Клиент — `website/src/repl/util.mjs` (+ SSR в `website/src/components/ReplPage.astro`), таблица `code_v1`, RLS на anon select/insert/update.
 - URL/ключ — в env (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`; Astro отдаёт `PUBLIC_*` в клиент). Значения — в `website/.env` (gitignored) и в переменных Vercel. Publishable-ключ публичный, данные защищает RLS.
 
 ## Домен
@@ -47,3 +47,8 @@ bulka.app проксируется через RU-nginx (Vercel недоступ�
 ## Конвенции
 - Интерфейс и документация — на русском и английском (см. «Два языка»). Названия функций/кода — английские.
 - Новые страницы доков: `layout: MainLayout.astro`, компоненты `MiniRepl`/`JsDoc`, регистрировать в `website/src/config.ts`.
+
+## Статистика и новости (Studio Hub)
+- Новости и полоски — скрипт хаба `embed/notices.js` в `website/src/components/HeadCommon.astro` (`data-app="bulka"`); события показов он шлёт только после согласия на статистику (`data-events`).
+- Статистика — `website/src/hub/` (формат и лимиты Rust-клиента студий `studio-hub-client`): ничего не считается и не уходит, пока человек не нажал «Готово» в панели согласия; счётчики `<дело>_done` / `<дело>_failed` + обезличенная причина.
+- Локально: `PUBLIC_STUDIO_HUB_URL=http://127.0.0.1:8787` (локальный хаб `npx wrangler dev`), без неё в dev статистика выключена. Десктоп узнаётся по `BULKA_DESKTOP=1` от Rust-оболочки; тестовые уведомления — `STUDIO_HUB_TEST=1`.
