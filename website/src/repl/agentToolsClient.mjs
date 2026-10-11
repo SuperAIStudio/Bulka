@@ -7,7 +7,7 @@
 // на сервере (api/chat.ts). Здесь — только то, что требует окна Bulka.
 
 import { soundMap } from '@strudel/webaudio';
-import { isAudioUnlocked } from './audioUnlock.mjs';
+import { AUDIO_LOCKED_MESSAGE, isAudioUnlocked } from './audioUnlock.mjs';
 import { selectText } from './editorSelection.mjs';
 import { $strudel_log_history } from './components/useLogger.jsx';
 import { beginRecording, endRecording } from './recordingState.mjs';
@@ -118,7 +118,7 @@ function formatConsole() {
  */
 async function evaluateChecked(editor) {
   if (!isAudioUnlocked()) {
-    return 'Звук ещё не включён: Bulka ждёт первого клика в окне (браузер не даёт звуку стартовать без действия пользователя). Попроси пользователя щёлкнуть в окне Bulka и повтори.';
+    return AUDIO_LOCKED_MESSAGE;
   }
   await editor.evaluate();
   const err = editor.repl?.state?.evalError;

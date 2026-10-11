@@ -21,7 +21,7 @@ Bulka — русскоязычный форк [Strudel](https://codeberg.org/uzu
 Bulka — squash-снимок, **общего git-предка с Codeberg нет напрямую**. Механика (уже настроена):
 - Ветка **`strudel-sync`** = дерево Bulka поверх upstream-базы `d198910a8` (синтетический предок) → в ней `git merge upstream/main` работает как обычный 3-way.
 - Резолвинг: **`packages/*` → сторона upstream** (движок), **`website/*` → сторона Bulka** (UI). Затем `git checkout upstream/main -- packages/` целиком (когерентность движка) и удалить upstream-«сироты» в website.
-- **Фичи Bulka в движке портируются ВПЕРЁД вручную**: запись (`startRecording/stopRecording/isRecording` + `encodeWAV` в `superdough`) и master-volume. Новый пакет для REPL подключать в `website/package.json` + в `evalScope` (`website/src/repl/util.mjs`).
+- **Фичи Bulka в движке портируются ВПЕРЁД вручную**: запись (`startRecording/stopRecording/isRecording` + `encodeWAV` в `superdough`) и master-volume; в `superdough/audioContext.mjs` `setAudioContext` не зовёт `close()` у контекста без него (у OfflineAudioContext в WebKit его нет — иначе экспорт WAV в Safari, Linux и macOS падает). Новый пакет для REPL подключать в `website/package.json` + в `evalScope` (`website/src/repl/util.mjs`).
 - Приземление на `main`: `git checkout main; git read-tree --reset -u strudel-sync; git commit`.
 - upstream remote: `https://codeberg.org/uzu/strudel.git`.
 - После синка: `node website/scripts/sync-en-docs.mjs` (английские страницы — оригиналы апстрима), `pnpm jsdoc-json` + `pnpm doc-ru` (справка), `node website/scripts/build-docs-index.js`.

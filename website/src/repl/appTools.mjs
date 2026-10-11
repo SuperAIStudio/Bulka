@@ -28,6 +28,7 @@ import {
 import { getMetadata } from '../metadata_parser.js';
 import { shareCode, supabase } from './util.mjs';
 import { PANEL_TABS } from '../lib/appToolSchemas.mjs';
+import { AUDIO_LOCKED_MESSAGE, isAudioUnlocked } from './audioUnlock.mjs';
 
 export { APP_TOOL_NAMES } from '../lib/appToolSchemas.mjs';
 
@@ -279,6 +280,8 @@ export async function execAppTool(ctx, name, args = {}) {
       if (!Number.isInteger(sampleRate) || sampleRate < 8000 || sampleRate > 192000) {
         throw new Error('sampleRate — целое от 8000 до 192000');
       }
+      // the export evaluates the code first, and evaluation waits for the first click in the window
+      if (!isAudioUnlocked()) throw new Error(AUDIO_LOCKED_MESSAGE);
       await ctx.handleExport(
         begin,
         end,

@@ -37,9 +37,14 @@ const RELEASES_URL: &str = "https://github.com/timoncool/Bulka/releases/latest";
 /// Сколько окно отправляет статистику при закрытии, как у студий (`POST /v1/hub/flush`, до 8 с).
 const FLUSH_WAIT_MS: u64 = 8000;
 
-/// Окно отправляет накопленную статистику и отвечает серверу; без хаба отвечает сразу.
+/// Node выходит, когда закрылся его stdin: оболочку убили сигналом (выход из сеанса, kill), и Tauri не успел
+/// погасить дочерний процесс.
+const EXIT_WITH_SHELL: &str = "data:text/javascript,process.stdin.on('end',()=>process.exit(0)).resume()";
+
+/// Окно отправляет накопленную статистику и отвечает серверу; без хаба отвечает сразу. JSON — потому что POST
+/// без него Astro (checkOrigin) считает отправкой формы с чужого сайта и отвечает 403.
 const FLUSH_SCRIPT: &str = "(window.__bulkaHub ? window.__bulkaHub.flush(8000) : Promise.resolve())\
-    .finally(() => fetch('/api/desktop/flush', { method: 'POST' }));";
+    .finally(() => fetch('/api/desktop/flush', { method: 'POST', headers: { 'content-type': 'application/json' } }));";
 
 /// Каталог exe (портативная / установленная раскладка Windows). Дев: каталог target-бинаря.
 fn exe_dir() -> PathBuf {
@@ -149,7 +154,7 @@ fn spawn_server(app: &tauri::AppHandle, app_dir: &PathBuf, data: &PathBuf, port:
     let cmd = app
         .shell()
         .command(node_exe(app_dir))
-        .args([entry])
+        .args(["--import", EXIT_WITH_SHELL, &entry])
         .env("HOST", "127.0.0.1")
         .env("PORT", port.to_string())
         .env("BULKA_DESKTOP", "1")

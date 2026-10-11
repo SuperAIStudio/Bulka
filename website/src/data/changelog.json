@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
+        "description": "no trailing whitespace in the English pages from upstream and the xen page",
+        "scope": "docs",
+        "author": "Nerual Dreming",
+        "hash": "54d7e4a0a"
+      },
+      {
         "type": "other",
         "typeLabel": "Прочее",
         "emoji": "📦",
