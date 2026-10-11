@@ -47,10 +47,13 @@ export function SupportTab() {
     <div className="text-foreground p-4 space-y-4 w-full max-w-2xl">
       <h3 className="text-base font-medium">Поддержать проект 🍞</h3>
       <p className="text-sm opacity-80">
-        Я Илья (<a className="underline" href="https://t.me/nerual_dreming" target="_blank" rel="noopener">Nerual Dreming</a>) —
-        делаю опенсорс AI-инструменты, которые можно запускать локально: бесплатно, без облака и подписок. Bulka тоже
-        бесплатна. Серверы, домены, железо для тестов и время — нет. Донат позволяет мне пилить дальше, а не искать, на что
-        жить.
+        Я Илья (
+        <a className="underline" href="https://t.me/nerual_dreming" target="_blank" rel="noopener">
+          Nerual Dreming
+        </a>
+        ) — делаю опенсорс AI-инструменты, которые можно запускать локально: бесплатно, без облака и подписок. Bulka
+        тоже бесплатна. Серверы, домены, железо для тестов и время — нет. Донат позволяет мне пилить дальше, а не
+        искать, на что жить.
       </p>
 
       <div className="grid gap-2 sm:grid-cols-2">

@@ -9,8 +9,12 @@ export function WelcomeTab({ context }) {
     <div className="prose dark:prose-invert min-w-full pt-2 font-sans pb-8 px-4 " style={{ fontFamily }}>
       <h3>🍞 добро пожаловать</h3>
       <p>
-        Вы нашли <span className="underline" style={{ fontFamily: "'Fredoka', sans-serif", color: '#D4A574' }}>bulka</span> — платформу для лайв-кодинга музыки
-        прямо в браузере! Это бесплатный проект с открытым исходным кодом, созданный как для новичков, так и для экспертов.
+        Вы нашли{' '}
+        <span className="underline" style={{ fontFamily: "'Fredoka', sans-serif", color: '#D4A574' }}>
+          bulka
+        </span>{' '}
+        — платформу для лайв-кодинга музыки прямо в браузере! Это бесплатный проект с открытым исходным кодом, созданный
+        как для новичков, так и для экспертов.
         <br />
         <br />
         <span className="underline">1. нажми «играть»</span> - <span className="underline">2. измени что-нибудь</span> -{' '}
@@ -25,11 +29,12 @@ export function WelcomeTab({ context }) {
       </p>
       <h3>🍞 о проекте</h3>
       <p>
-        <span style={{ fontFamily: "'Fredoka', sans-serif", color: '#D4A574' }}>Bulka</span> — это русскоязычный форк проекта{' '}
+        <span style={{ fontFamily: "'Fredoka', sans-serif", color: '#D4A574' }}>Bulka</span> — это русскоязычный форк
+        проекта{' '}
         <a href="https://strudel.cc/" target="_blank">
           Strudel
-        </a>
-        {' '}с встроенным AI-агентом. Исходный код доступен на{' '}
+        </a>{' '}
+        с встроенным AI-агентом. Исходный код доступен на{' '}
         <a href="https://github.com/timoncool/Bulka" target="_blank">
           GitHub
         </a>
@@ -49,16 +54,16 @@ export function WelcomeTab({ context }) {
         Проект развивается{' '}
         <a href="https://t.me/nerual_dreming" target="_blank">
           Nerual Dreming
-        </a>
-        {' '}— основателем{' '}
+        </a>{' '}
+        — основателем{' '}
         <a href="https://artgeneration.me/" target="_blank">
           ArtGeneration.me
         </a>
         ,{' '}
         <a href="https://www.youtube.com/@nerual_dreming" target="_blank">
           техноблогером
-        </a>
-        {' '}и нейро-евангелистом.
+        </a>{' '}
+        и нейро-евангелистом.
       </p>
     </div>
   );

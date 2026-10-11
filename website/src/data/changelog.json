@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "chore",
+        "typeLabel": "Обслуживание",
+        "emoji": "🔧",
+        "description": "Astro 5.18 + integrations, React 19.3, supabase-js 2.117, Tauri 2.12 (CLI+crates); drop 9 unused deps (ai, @ai-sdk/*, zod, hs2js dup...); pnpm 11 allowBuilds mirrors upstream onlyBuiltDependencies",
+        "scope": "deps",
+        "author": "Nerual Dreming",
+        "hash": "2d903d2dc"
+      },
+      {
         "type": "docs",
         "typeLabel": "Документация",
         "emoji": "📚",

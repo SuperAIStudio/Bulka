@@ -107,7 +107,7 @@ export default function Search() {
           break;
       }
     },
-    [results, selectedIndex, onClose]
+    [results, selectedIndex, onClose],
   );
 
   // Scroll selected item into view
@@ -122,7 +122,11 @@ export default function Search() {
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Open on "/" key (not in input fields)
-      if (e.key === '/' && !isOpen && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+      if (
+        e.key === '/' &&
+        !isOpen &&
+        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)
+      ) {
         e.preventDefault();
         onOpen();
       }
@@ -271,13 +275,9 @@ export default function Search() {
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}
                   >
-                    <div className="search-result-category">
-                      {getCategoryLabel(result.category)}
-                    </div>
+                    <div className="search-result-category">{getCategoryLabel(result.category)}</div>
                     <div className="search-result-title">{result.title}</div>
-                    <div className="search-result-content">
-                      {highlightMatch(result.content)}
-                    </div>
+                    <div className="search-result-content">{highlightMatch(result.content)}</div>
                   </a>
                 ))}
 
@@ -286,7 +286,8 @@ export default function Search() {
                     <p>Начните вводить для поиска</p>
                     <div className="search-shortcuts">
                       <div className="search-shortcut">
-                        <kbd>↑</kbd><kbd>↓</kbd> навигация
+                        <kbd>↑</kbd>
+                        <kbd>↓</kbd> навигация
                       </div>
                       <div className="search-shortcut">
                         <kbd>Enter</kbd> открыть
@@ -301,13 +302,11 @@ export default function Search() {
 
               {/* Search Footer */}
               <div className="search-footer">
-                <span className="search-footer-hint">
-                  Локальный поиск по документации Bulka
-                </span>
+                <span className="search-footer-hint">Локальный поиск по документации Bulka</span>
               </div>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

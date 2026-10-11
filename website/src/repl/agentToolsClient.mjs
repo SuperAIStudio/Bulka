@@ -12,9 +12,19 @@ import { beginRecording, endRecording } from './recordingState.mjs';
 
 // Список клиентских тулзов (для маршрутизации: клиент vs сервер).
 export const CLIENT_TOOL_NAMES = [
-  'readCode', 'setFullCode', 'editCode', 'appendCode', 'playMusic', 'stopMusic',
-  'highlightCode', 'getAvailablePacks', 'getBankSamples', 'getConsole',
-  'startRecording', 'stopRecording', 'recordSeconds',
+  'readCode',
+  'setFullCode',
+  'editCode',
+  'appendCode',
+  'playMusic',
+  'stopMusic',
+  'highlightCode',
+  'getAvailablePacks',
+  'getBankSamples',
+  'getConsole',
+  'startRecording',
+  'stopRecording',
+  'recordSeconds',
 ];
 
 // Имя файла записи из `// @title` кода.
@@ -53,9 +63,10 @@ function formatPacks() {
   const list = Object.entries(packs)
     .map(([packName, info]) => {
       const bankNames = info.banks.sort();
-      const banksStr = bankNames.length <= 30
-        ? bankNames.join(', ')
-        : bankNames.slice(0, 10).join(', ') + `, ... и ещё ${bankNames.length - 10}`;
+      const banksStr =
+        bankNames.length <= 30
+          ? bankNames.join(', ')
+          : bankNames.slice(0, 10).join(', ') + `, ... и ещё ${bankNames.length - 10}`;
       return `• ${packName} (${info.banks.length} банков, ${info.type}${info.tag ? ', ' + info.tag : ''}):\n  Банки: ${banksStr}`;
     })
     .join('\n\n');
@@ -71,7 +82,10 @@ function formatBank(bankName) {
   if (data.type === 'sample' && data.samples) {
     const samplesList = Array.isArray(data.samples) ? data.samples : Object.values(data.samples).flat();
     let info = `Банк "${bankName}" (${data.pack || 'unknown'}):\nТип: ${data.type}\nСемплов: ${samplesList.length}\nФайлы:\n`;
-    info += samplesList.slice(0, 20).map((s, i) => `  ${i}: ${s}`).join('\n');
+    info += samplesList
+      .slice(0, 20)
+      .map((s, i) => `  ${i}: ${s}`)
+      .join('\n');
     if (samplesList.length > 20) info += `\n  ... и ещё ${samplesList.length - 20} файлов`;
     return info;
   }

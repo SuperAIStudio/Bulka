@@ -19,8 +19,7 @@ const { BASE_URL } = import.meta.env;
 const baseNoTrailing = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 
 export function Header({ context, embedded = false }) {
-  const { started, pending, isDirty, activeCode, handleTogglePlay, handleEvaluate, handleShuffle, editorRef } =
-    context;
+  const { started, pending, isDirty, activeCode, handleTogglePlay, handleEvaluate, handleShuffle, editorRef } = context;
   const isEmbedded = typeof window !== 'undefined' && (embedded || window.location !== window.parent.location);
   const { isZen, isButtonRowHidden, isCSSAnimationDisabled, fontFamily, masterVolume } = useSettings();
 
@@ -32,7 +31,8 @@ export function Header({ context, embedded = false }) {
   const shareButtonRef = useRef(null);
   // Десктоп: «поделиться» бесполезна (шеринг — это публичная ссылка bulka.app), прячем.
   const isDesktopApp =
-    typeof window !== 'undefined' && (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
+    typeof window !== 'undefined' &&
+    (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost');
 
   // Handle share button click
   const handleShareClick = useCallback(async () => {
@@ -49,12 +49,15 @@ export function Header({ context, embedded = false }) {
   }, [activeCode, editorRef]);
 
   // Handle public toggle change
-  const handlePublicChange = useCallback(async (checked) => {
-    setIsPublic(checked);
-    if (shareHash) {
-      await updateTrackPublicity(shareHash, checked);
-    }
-  }, [shareHash]);
+  const handlePublicChange = useCallback(
+    async (checked) => {
+      setIsPublic(checked);
+      if (shareHash) {
+        await updateTrackPublicity(shareHash, checked);
+      }
+    },
+    [shareHash],
+  );
 
   // Volume state - simplified: volume === 0 means muted
   const [volume, setVolume] = useState(masterVolume);
@@ -146,17 +149,20 @@ export function Header({ context, embedded = false }) {
   }, []);
 
   // Handle scroll wheel on volume slider
-  const handleVolumeWheel = useCallback((e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.05 : 0.05; // Scroll down = decrease, up = increase
-    const newVolume = Math.max(0, Math.min(1, volume + delta));
-    setVolume(newVolume);
-    setMasterVolume(newVolume);
-    setMasterVolumeSettings(newVolume);
-    if (newVolume > 0) {
-      setPrevVolume(newVolume);
-    }
-  }, [volume]);
+  const handleVolumeWheel = useCallback(
+    (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05; // Scroll down = decrease, up = increase
+      const newVolume = Math.max(0, Math.min(1, volume + delta));
+      setVolume(newVolume);
+      setMasterVolume(newVolume);
+      setMasterVolumeSettings(newVolume);
+      if (newVolume > 0) {
+        setPrevVolume(newVolume);
+      }
+    },
+    [volume],
+  );
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -267,9 +273,7 @@ export function Header({ context, embedded = false }) {
           </div>
         )}
         {/* Recorder - right after volume */}
-        {!isZen && !isButtonRowHidden && !isEmbedded && (
-          <Recorder started={started} activeCode={activeCode} />
-        )}
+        {!isZen && !isButtonRowHidden && !isEmbedded && <Recorder started={started} activeCode={activeCode} />}
         {/* Undo/Redo buttons - after recorder */}
         {!isZen && !isButtonRowHidden && (
           <div className={cx('flex items-center ml-3', !isEmbedded ? 'px-1' : 'px-0')}>
@@ -419,7 +423,6 @@ export function Header({ context, embedded = false }) {
           )}
         </div>
       )}
-
     </header>
   );
 }

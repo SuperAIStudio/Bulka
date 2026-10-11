@@ -20,10 +20,7 @@ export function HorizontalPanel({ context }) {
   const { isPanelOpen, activeFooter: tab } = settings;
 
   return (
-    <PanelNav
-      settings={settings}
-      className={cx('h-full overflow-hidden flex flex-col')}
-    >
+    <PanelNav settings={settings} className={cx('h-full overflow-hidden flex flex-col')}>
       {isPanelOpen ? (
         <>
           <div className="flex grow overflow-auto pr-10 h-full">
@@ -60,10 +57,7 @@ export function VerticalPanel({ context }) {
   const { activeFooter: tab, isPanelOpen } = settings;
 
   return (
-    <PanelNav
-      settings={settings}
-      className={cx('h-full')}
-    >
+    <PanelNav settings={settings} className={cx('h-full')}>
       {isPanelOpen ? (
         <div className={cx('flex flex-col h-full')}>
           <div className="flex justify-between w-full shrink-0">

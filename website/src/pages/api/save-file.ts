@@ -14,12 +14,17 @@ export const POST: APIRoute = async ({ request }) => {
     const { filename, dataBase64, subfolder } = await request.json();
     if (!dataBase64) return json({ ok: false, error: 'нет данных' }, 400);
 
-    const safe = String(filename || `bulka_${Date.now()}.bin`).replace(/[<>:"/\\|?*]/g, '_').slice(0, 150);
+    const safe = String(filename || `bulka_${Date.now()}.bin`)
+      .replace(/[<>:"/\\|?*]/g, '_')
+      .slice(0, 150);
     // BULKA_APP_DIR = каталог рядом с exe (портатив/установка). Фолбэк — cwd сервера.
     const baseDir = process.env.BULKA_APP_DIR || process.cwd();
     // Записи группируем в папку с названием трека: recordings/<трек>/файл.wav (по просьбе — так
     // несколько партий одного трека лежат вместе). subfolder санитайзим, пустой — прямо в recordings.
-    const safeSub = String(subfolder || '').replace(/[<>:"/\\|?*]/g, '_').slice(0, 100).trim();
+    const safeSub = String(subfolder || '')
+      .replace(/[<>:"/\\|?*]/g, '_')
+      .slice(0, 100)
+      .trim();
     const dir = safeSub ? join(baseDir, 'recordings', safeSub) : join(baseDir, 'recordings');
     await mkdir(dir, { recursive: true });
     const path = join(dir, safe);

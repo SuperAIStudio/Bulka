@@ -343,16 +343,10 @@ export function SoundsTab() {
           {showPackFilter && (
             <div className="flex flex-col gap-1 pl-4 max-h-40 overflow-y-auto">
               <div className="flex gap-2 mb-1">
-                <button
-                  onClick={selectAllPacks}
-                  className="text-xs opacity-70 hover:opacity-100 underline"
-                >
+                <button onClick={selectAllPacks} className="text-xs opacity-70 hover:opacity-100 underline">
                   Выбрать все
                 </button>
-                <button
-                  onClick={deselectAllPacks}
-                  className="text-xs opacity-70 hover:opacity-100 underline"
-                >
+                <button onClick={deselectAllPacks} className="text-xs opacity-70 hover:opacity-100 underline">
                   Снять все
                 </button>
               </div>
@@ -416,8 +410,8 @@ export function SoundsTab() {
               <a href={`${baseNoTrailing}/learn/samples/#с-диска-кнопка-импортировать-папку-звуков`} target="_blank">
                 в папке или подпапке
               </a>
-              . Лучший способ — загрузить папку "samples", содержащую подпапки с отдельными звуками или
-              звуковыми банками (см. диаграмму ниже).{' '}
+              . Лучший способ — загрузить папку "samples", содержащую подпапки с отдельными звуками или звуковыми
+              банками (см. диаграмму ниже).{' '}
             </p>
             <pre className="bg-background" key={'sample-diagram'}>
               {`└─ samples <-- импортируй эту папку
@@ -431,9 +425,9 @@ export function SoundsTab() {
       └─ smashmiddle.wav`}
             </pre>
             <p>
-              Имя подпапки соответствует имени звука во вкладке "свои". Несколько сэмплов в одной
-              подпапке имеют одинаковое имя, но доступны через ".n( )" — помни, что нумерация
-              начинается с нуля и идёт в алфавитном порядке!
+              Имя подпапки соответствует имени звука во вкладке "свои". Несколько сэмплов в одной подпапке имеют
+              одинаковое имя, но доступны через ".n( )" — помни, что нумерация начинается с нуля и идёт в алфавитном
+              порядке!
             </p>
             <p>
               Больше информации и другие способы использования своих звуков —{' '}
@@ -447,8 +441,8 @@ export function SoundsTab() {
               n("0 1 2 3 4 5").s("sample-name")
             </pre>
             <p>
-              Вставь строку выше в редактор, чтобы услышать загруженную папку. Используй имя сэмпла
-              как оно отображается во вкладке "свои".
+              Вставь строку выше в редактор, чтобы услышать загруженную папку. Используй имя сэмпла как оно отображается
+              во вкладке "свои".
             </p>
           </div>
         ) : (

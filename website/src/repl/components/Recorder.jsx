@@ -64,28 +64,16 @@ export function Recorder({ started, activeCode }) {
         title={isRecording ? 'остановить запись' : 'начать запись'}
         className={cx(
           'flex items-center space-x-1.5 px-2 py-1 rounded transition-all',
-          isRecording
-            ? 'bg-red-500/20 hover:bg-red-500/30'
-            : 'hover:opacity-50',
+          isRecording ? 'bg-red-500/20 hover:bg-red-500/30' : 'hover:opacity-50',
         )}
       >
         {/* REC icon - matches heroicons style */}
         <RecordIcon
           filled={isRecording}
-          className={cx(
-            'w-5 h-5 transition-all',
-            isRecording
-              ? 'text-red-500 animate-pulse'
-              : 'text-foreground',
-          )}
+          className={cx('w-5 h-5 transition-all', isRecording ? 'text-red-500 animate-pulse' : 'text-foreground')}
         />
         {/* Label or timer */}
-        <span
-          className={cx(
-            'text-xs font-mono',
-            isRecording ? 'text-red-400' : 'text-foreground opacity-60',
-          )}
-        >
+        <span className={cx('text-xs font-mono', isRecording ? 'text-red-400' : 'text-foreground opacity-60')}>
           {isRecording ? formatTime(recordingTime) : 'REC'}
         </span>
       </button>

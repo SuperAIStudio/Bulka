@@ -356,7 +356,7 @@ export async function toggleLike(hash) {
 
   // Update localStorage
   if (wasLiked) {
-    setLikedTracks(likedTracks.filter(h => h !== hash));
+    setLikedTracks(likedTracks.filter((h) => h !== hash));
   } else {
     setLikedTracks([...likedTracks, hash]);
   }
@@ -365,11 +365,7 @@ export async function toggleLike(hash) {
   try {
     if (wasLiked) {
       // Decrement like_count
-      const { data } = await supabase
-        .from('code_v1')
-        .select('like_count')
-        .eq('hash', hash)
-        .single();
+      const { data } = await supabase.from('code_v1').select('like_count').eq('hash', hash).single();
 
       const currentCount = data?.like_count || 0;
       await supabase
@@ -378,11 +374,7 @@ export async function toggleLike(hash) {
         .eq('hash', hash);
     } else {
       // Increment like_count
-      const { data } = await supabase
-        .from('code_v1')
-        .select('like_count')
-        .eq('hash', hash)
-        .single();
+      const { data } = await supabase.from('code_v1').select('like_count').eq('hash', hash).single();
 
       const currentCount = data?.like_count || 0;
       await supabase
@@ -402,10 +394,7 @@ export async function updateTrackPublicity(hash, isPublic) {
   if (!hash) return { success: false };
 
   try {
-    const { error } = await supabase
-      .from('code_v1')
-      .update({ public: isPublic })
-      .eq('hash', hash);
+    const { error } = await supabase.from('code_v1').update({ public: isPublic }).eq('hash', hash);
 
     if (error) {
       console.error('Failed to update publicity:', error);

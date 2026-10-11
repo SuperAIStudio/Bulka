@@ -193,12 +193,15 @@ function isValidCode(code) {
   if (trimmed.length < 10) return false;
 
   // Contains only comments or loading placeholders
-  const withoutComments = trimmed.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
+  const withoutComments = trimmed
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .trim();
   if (withoutComments.length < 5) return false;
 
   // Specific bad patterns
   const badPatterns = ['// LOADING', '//LOADING', 'LOADING'];
-  if (badPatterns.some(p => trimmed.toUpperCase().includes(p))) return false;
+  if (badPatterns.some((p) => trimmed.toUpperCase().includes(p))) return false;
 
   return true;
 }
@@ -221,7 +224,7 @@ export async function shareCode(codeToShare, isPublic = true) {
         success: true,
         shareUrl,
         hash: lastShareHash,
-        isExisting: true
+        isExisting: true,
       };
     }
 
@@ -246,7 +249,7 @@ export async function shareCode(codeToShare, isPublic = true) {
             shareUrl,
             hash: originHash,
             isExisting: true,
-            wasUpdated: true
+            wasUpdated: true,
           };
         }
         // Если UPDATE не сработал - продолжаем стандартную логику
@@ -273,17 +276,19 @@ export async function shareCode(codeToShare, isPublic = true) {
           success: true,
           shareUrl,
           hash: existing.hash,
-          isExisting: true
+          isExisting: true,
         };
       }
 
       // Create new entry
       const hash = nanoid(12);
-      const { error } = await supabase.from('code_v1').insert([{
-        code: codeToShare,
-        hash,
-        public: isPublic,
-      }]);
+      const { error } = await supabase.from('code_v1').insert([
+        {
+          code: codeToShare,
+          hash,
+          public: isPublic,
+        },
+      ]);
 
       if (!error) {
         const shareUrl = window.location.origin + window.location.pathname + '?' + hash;
@@ -298,7 +303,7 @@ export async function shareCode(codeToShare, isPublic = true) {
           success: true,
           shareUrl,
           hash,
-          isExisting: false
+          isExisting: false,
         };
       }
       console.warn('Supabase error, falling back to long URL:', error);
@@ -316,7 +321,7 @@ export async function shareCode(codeToShare, isPublic = true) {
       success: true,
       shareUrl,
       hash: null,
-      isExisting: false
+      isExisting: false,
     };
   } catch (e) {
     console.error(e);

@@ -37,7 +37,7 @@ export type Sidebar = Record<(typeof KNOWN_LANGUAGE_CODES)[number], SidebarLang>
 export const SIDEBAR: Sidebar = {
   de: {},
   en: {
-    'Презентация': [
+    Презентация: [
       { text: 'Что такое Bulka?', link: 'workshop/getting-started' },
       { text: 'Лента', link: 'feed' },
       { text: 'Галерея треков', link: 'intro/gallery' },
@@ -45,7 +45,7 @@ export const SIDEBAR: Sidebar = {
       { text: 'Блог', link: 'blog' },
       { text: 'Что нового', link: 'whatsnew' },
     ],
-    'Воркшоп': [
+    Воркшоп: [
       // { text: 'Начало работы', link: 'workshop/getting-started' },
       { text: 'Первые звуки', link: 'workshop/first-sounds' },
       { text: 'Первые ноты', link: 'workshop/first-notes' },
@@ -72,7 +72,7 @@ export const SIDEBAR: Sidebar = {
       { text: 'Галерея примеров', link: 'hydra/examples' },
       { text: 'Hydra в Strudel', link: 'learn/hydra' },
     ],
-    'Ещё': [
+    Ещё: [
       { text: 'Bulka AI Agent', link: 'learn/ai-agent' },
       { text: 'Бесплатный AI (OVHcloud)', link: 'learn/free-ai' },
       { text: 'Десктоп-версия (Windows)', link: 'learn/desktop' },
@@ -108,7 +108,7 @@ export const SIDEBAR: Sidebar = {
       { text: 'Тональные функции', link: 'learn/tonal' },
       { text: 'Пошаговые функции', link: 'learn/stepwise' },
     ],
-    'Понимание': [
+    Понимание: [
       { text: 'Синтаксис кода', link: 'learn/code' },
       { text: 'Pitch', link: 'understand/pitch' },
       { text: 'Ксеногармонические функции', link: 'learn/xen' },
@@ -117,7 +117,7 @@ export const SIDEBAR: Sidebar = {
       { text: 'Выравнивание паттернов', link: 'technical-manual/alignment' },
       { text: 'Bulka vs Tidal', link: 'learn/strudel-vs-tidal' },
     ],
-    'Разработка': [
+    Разработка: [
       { text: 'Bulka в вашем проекте', link: 'technical-manual/project-start' },
       { text: 'Пакеты', link: 'technical-manual/packages' },
       { text: 'REPL', link: 'technical-manual/repl' },

@@ -21,10 +21,13 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
   // Auto-copy on open
   useEffect(() => {
     if (isOpen && shareUrl) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }).catch(console.error);
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(console.error);
     }
   }, [isOpen, shareUrl]);
 
@@ -48,16 +51,13 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
         'fixed z-[9999]',
         'bg-background border border-foreground/30 rounded-lg',
         'p-4 shadow-2xl min-w-[320px] max-w-[400px]',
-        'text-foreground'
+        'text-foreground',
       )}
     >
       {/* Header with title and close */}
       <div className="flex justify-between items-center mb-3">
         <span className="font-medium">Поделиться</span>
-        <button
-          onClick={onClose}
-          className="hover:opacity-50 p-1"
-        >
+        <button onClick={onClose} className="hover:opacity-50 p-1">
           <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
@@ -73,7 +73,7 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
             className={cx(
               'flex-1 bg-lineHighlight border border-foreground/30 rounded-md',
               'px-3 py-2 text-sm text-foreground',
-              'focus:outline-none focus:border-foreground'
+              'focus:outline-none focus:border-foreground',
             )}
             onClick={(e) => e.target.select()}
           />
@@ -82,7 +82,7 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
             className={cx(
               'bg-lineHighlight border border-foreground/30 rounded-md',
               'px-3 py-2 hover:opacity-50 transition-opacity',
-              'flex items-center gap-1 shrink-0'
+              'flex items-center gap-1 shrink-0',
             )}
           >
             {copied ? (
@@ -111,7 +111,7 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
             className={cx(
               'w-5 h-5 rounded border border-foreground',
               'bg-background cursor-pointer',
-              'accent-foreground'
+              'accent-foreground',
             )}
           />
           <label htmlFor="share-public-checkbox" className="cursor-pointer select-none">
@@ -122,19 +122,14 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
 
       {/* Info text */}
       <p className="text-xs opacity-50 mb-4">
-        {isPublic
-          ? 'Паттерн будет виден в ленте сообщества'
-          : 'Паттерн доступен только по ссылке'}
+        {isPublic ? 'Паттерн будет виден в ленте сообщества' : 'Паттерн доступен только по ссылке'}
       </p>
 
       {/* OK button */}
       <div className="flex justify-end">
         <button
           onClick={onClose}
-          className={cx(
-            'bg-foreground text-background rounded-md',
-            'px-4 py-2 hover:opacity-80 transition-opacity'
-          )}
+          className={cx('bg-foreground text-background rounded-md', 'px-4 py-2 hover:opacity-80 transition-opacity')}
         >
           Готово
         </button>

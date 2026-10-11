@@ -18,18 +18,20 @@ const EXCLUDE_DIRS = ['api', 'swatch', 'udels'];
  * Strip MDX-specific syntax to get clean searchable text
  */
 function stripMdxSyntax(content) {
-  return content
-    // Remove import statements
-    .replace(/^import\s+.*$/gm, '')
-    // Remove JSX components like <MiniRepl ... />
-    .replace(/<[A-Z][a-zA-Z]*\s+[\s\S]*?\/>/g, '')
-    // Remove JSX components with children <Component>...</Component>
-    .replace(/<[A-Z][a-zA-Z]*[^>]*>[\s\S]*?<\/[A-Z][a-zA-Z]*>/g, '')
-    // Remove frontmatter
-    .replace(/^---[\s\S]*?---\n/m, '')
-    // Clean up multiple empty lines
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return (
+    content
+      // Remove import statements
+      .replace(/^import\s+.*$/gm, '')
+      // Remove JSX components like <MiniRepl ... />
+      .replace(/<[A-Z][a-zA-Z]*\s+[\s\S]*?\/>/g, '')
+      // Remove JSX components with children <Component>...</Component>
+      .replace(/<[A-Z][a-zA-Z]*[^>]*>[\s\S]*?<\/[A-Z][a-zA-Z]*>/g, '')
+      // Remove frontmatter
+      .replace(/^---[\s\S]*?---\n/m, '')
+      // Clean up multiple empty lines
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  );
 }
 
 /**
@@ -39,17 +41,20 @@ function extractKeywords(content, title) {
   const words = new Set();
 
   // Add words from title
-  title.toLowerCase().split(/\s+/).forEach(w => {
-    if (w.length > 2) words.add(w);
-  });
+  title
+    .toLowerCase()
+    .split(/\s+/)
+    .forEach((w) => {
+      if (w.length > 2) words.add(w);
+    });
 
   // Extract function names (camelCase or with parentheses)
   const funcMatches = content.match(/\b[a-z][a-zA-Z]+\(/g) || [];
-  funcMatches.forEach(m => words.add(m.replace('(', '').toLowerCase()));
+  funcMatches.forEach((m) => words.add(m.replace('(', '').toLowerCase()));
 
   // Extract common terms
   const terms = content.toLowerCase().match(/\b[a-z]{3,15}\b/g) || [];
-  terms.forEach(t => {
+  terms.forEach((t) => {
     if (t.length > 3) words.add(t);
   });
 
@@ -122,14 +127,13 @@ function buildIndex() {
       const category = pathParts.length > 1 ? pathParts[0] : 'general';
 
       index.push({
-        id: relativePath.replace(/\.(mdx?|md)$/, '').replace(/[\/\\]/g, '-'),
+        id: relativePath.replace(/\.(mdx?|md)$/, '').replace(/[/\\]/g, '-'),
         title,
         content: content.slice(0, 8000), // Limit content size
         category,
         keywords,
         path: relativePath,
       });
-
     } catch (err) {
       console.error(`Error processing ${filePath}:`, err.message);
     }

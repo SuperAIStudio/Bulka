@@ -28,7 +28,11 @@ const MCP_EXTRA_TOOLS = [
   {
     name: 'setCodeAndPlay',
     description: 'Заменить ВЕСЬ код и сразу запустить воспроизведение (setFullCode + playMusic одной командой).',
-    inputSchema: { type: 'object', properties: { code: { type: 'string', description: 'Полный код Strudel' } }, required: ['code'] },
+    inputSchema: {
+      type: 'object',
+      properties: { code: { type: 'string', description: 'Полный код Strudel' } },
+      required: ['code'],
+    },
   },
   {
     name: 'getNewMessages',
@@ -98,7 +102,8 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // --- Всё остальное — клиентские тулзы: исполняются в окне через мост (execClientTool) ---
-    const isKnownClient = REGISTRY_TOOLS.some((t) => t.name === name && !SERVER_TOOLS.has(t.name)) || name === 'setCodeAndPlay';
+    const isKnownClient =
+      REGISTRY_TOOLS.some((t) => t.name === name && !SERVER_TOOLS.has(t.name)) || name === 'setCodeAndPlay';
     if (!isKnownClient) return ok(`Неизвестный инструмент: ${name}`, true);
 
     const { result, error } = await callBridge(name, args);

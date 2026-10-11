@@ -123,13 +123,17 @@ export function useSettings() {
   // Параметры моделей хранятся JSON-строкой — парсим в объект (терпимо к старым/битым значениям)
   let localModelParams = {};
   try {
-    localModelParams = typeof state.localModelParams === 'string' ? JSON.parse(state.localModelParams) : (state.localModelParams || {});
+    localModelParams =
+      typeof state.localModelParams === 'string' ? JSON.parse(state.localModelParams) : state.localModelParams || {};
   } catch (e) {
     localModelParams = { temperature: 0.7, max_tokens: 8192 };
   }
   let openrouterModelParams = {};
   try {
-    openrouterModelParams = typeof state.openrouterModelParams === 'string' ? JSON.parse(state.openrouterModelParams) : (state.openrouterModelParams || {});
+    openrouterModelParams =
+      typeof state.openrouterModelParams === 'string'
+        ? JSON.parse(state.openrouterModelParams)
+        : state.openrouterModelParams || {};
   } catch (e) {
     openrouterModelParams = {};
   }
@@ -166,7 +170,7 @@ export function useSettings() {
       : state.patternAutoStart === undefined
         ? true
         : parseBoolean(state.patternAutoStart),
-    masterVolume: Number(state.masterVolume) ?? 1,
+    masterVolume: state.masterVolume === undefined ? 1 : Number(state.masterVolume),
     panelSizeBottom: Number(state.panelSizeBottom) || 35,
     panelSizeRight: Number(state.panelSizeRight) || 30,
   };
@@ -209,13 +213,21 @@ export const setLocalBaseUrl = (url) => settingsMap.setKey('localBaseUrl', url);
 export const setLocalApiKey = (key) => settingsMap.setKey('localApiKey', key);
 export const setLocalModelParams = (params) => {
   let cur = {};
-  try { cur = JSON.parse(settingsMap.get().localModelParams || '{}'); } catch (e) { cur = {}; }
+  try {
+    cur = JSON.parse(settingsMap.get().localModelParams || '{}');
+  } catch (e) {
+    cur = {};
+  }
   settingsMap.setKey('localModelParams', JSON.stringify({ ...cur, ...params }));
 };
 // Сохранить параметры конкретной OpenRouter-модели (merge в общий словарь по id модели)
 export const setOpenrouterModelParams = (modelId, params) => {
   let cur = {};
-  try { cur = JSON.parse(settingsMap.get().openrouterModelParams || '{}'); } catch (e) { cur = {}; }
+  try {
+    cur = JSON.parse(settingsMap.get().openrouterModelParams || '{}');
+  } catch (e) {
+    cur = {};
+  }
   const next = { ...cur, [modelId]: { ...(cur[modelId] || {}), ...params } };
   settingsMap.setKey('openrouterModelParams', JSON.stringify(next));
 };
@@ -223,15 +235,24 @@ export const setOpenrouterModelParams = (modelId, params) => {
 // Helper to get API key for current provider (free doesn't need a key)
 export const getApiKeyForProvider = (provider, settings) => {
   switch (provider) {
-    case 'openai': return settings.openaiApiKey;
-    case 'anthropic': return settings.anthropicApiKey;
-    case 'gemini': return settings.geminiApiKey;
-    case 'zai': return settings.zaiApiKey;
-    case 'openrouter': return settings.openrouterApiKey;
-    case 'free': return null; // бесплатный провайдер (OVHcloud) — ключ не нужен
-    case 'mcp': return null; // внешний агент (MCP) — ключ не нужен
-    case 'local': return settings.localApiKey || null; // локальная модель — ключ опционален
-    default: return '';
+    case 'openai':
+      return settings.openaiApiKey;
+    case 'anthropic':
+      return settings.anthropicApiKey;
+    case 'gemini':
+      return settings.geminiApiKey;
+    case 'zai':
+      return settings.zaiApiKey;
+    case 'openrouter':
+      return settings.openrouterApiKey;
+    case 'free':
+      return null; // бесплатный провайдер (OVHcloud) — ключ не нужен
+    case 'mcp':
+      return null; // внешний агент (MCP) — ключ не нужен
+    case 'local':
+      return settings.localApiKey || null; // локальная модель — ключ опционален
+    default:
+      return '';
   }
 };
 

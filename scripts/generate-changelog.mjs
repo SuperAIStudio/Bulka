@@ -35,18 +35,13 @@ const COMMIT_TYPES = {
 };
 
 // Коммиты, которые нужно пропустить
-const SKIP_PATTERNS = [
-  /^Merge pull request/,
-  /^Merge branch/,
-  /^Revert "/,
-  /^Reapply "/,
-];
+const SKIP_PATTERNS = [/^Merge pull request/, /^Merge branch/, /^Revert "/, /^Reapply "/];
 
 function parseCommit(line) {
   const [date, message, author, hash] = line.split('|');
 
   // Пропускаем merge коммиты и реверты
-  if (SKIP_PATTERNS.some(pattern => pattern.test(message))) {
+  if (SKIP_PATTERNS.some((pattern) => pattern.test(message))) {
     return null;
   }
 
@@ -124,27 +119,36 @@ function groupByDate(commits) {
   // Сортируем даты по убыванию (новые сверху)
   const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
-  return sortedDates.map(date => ({
+  return sortedDates.map((date) => ({
     date,
     commits: grouped[date],
   }));
 }
 
-
 function formatDate(dateStr) {
   const date = new Date(dateStr);
   const months = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    'января',
+    'февраля',
+    'марта',
+    'апреля',
+    'мая',
+    'июня',
+    'июля',
+    'августа',
+    'сентября',
+    'октября',
+    'ноября',
+    'декабря',
   ];
   return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function generateJSON(groupedByDate) {
-  const changelog = groupedByDate.map(day => ({
+  const changelog = groupedByDate.map((day) => ({
     date: day.date,
     dateFormatted: formatDate(day.date),
-    changes: day.commits.map(c => ({
+    changes: day.commits.map((c) => ({
       type: c.type,
       typeLabel: COMMIT_TYPES[c.type]?.label || 'Прочее',
       emoji: COMMIT_TYPES[c.type]?.emoji || '📦',
@@ -157,7 +161,6 @@ function generateJSON(groupedByDate) {
 
   return changelog;
 }
-
 
 function mergeChangelogs(existing, newChanges) {
   // Собираем все известные хэши для дедупликации
@@ -178,7 +181,7 @@ function mergeChangelogs(existing, newChanges) {
 
   // Добавляем только новые коммиты (без дубликатов)
   for (const day of newChanges) {
-    const uniqueChanges = day.changes.filter(c => !knownHashes.has(c.hash));
+    const uniqueChanges = day.changes.filter((c) => !knownHashes.has(c.hash));
     if (uniqueChanges.length === 0) continue;
 
     if (byDate[day.date]) {
@@ -191,7 +194,7 @@ function mergeChangelogs(existing, newChanges) {
   // Дедупликация внутри каждого дня (на всякий случай)
   for (const date of Object.keys(byDate)) {
     const seen = new Set();
-    byDate[date].changes = byDate[date].changes.filter(c => {
+    byDate[date].changes = byDate[date].changes.filter((c) => {
       if (seen.has(c.hash)) return false;
       seen.add(c.hash);
       return true;
@@ -243,17 +246,14 @@ function main() {
 
   // Добавляем предупреждение как первый элемент (для Claude и других AI)
   const warningEntry = {
-    "_AI_WARNING": "⚠️ НЕ РЕДАКТИРУЙ ЭТОТ ФАЙЛ ВРУЧНУЮ! Запусти: pnpm changelog",
-    "date": "_DO_NOT_EDIT",
-    "dateFormatted": "⚠️ ГЕНЕРИРУЕТСЯ АВТОМАТИЧЕСКИ",
-    "changes": []
+    _AI_WARNING: '⚠️ НЕ РЕДАКТИРУЙ ЭТОТ ФАЙЛ ВРУЧНУЮ! Запусти: pnpm changelog',
+    date: '_DO_NOT_EDIT',
+    dateFormatted: '⚠️ ГЕНЕРИРУЕТСЯ АВТОМАТИЧЕСКИ',
+    changes: [],
   };
 
   // Убираем старое предупреждение если есть, добавляем новое в начало
-  const finalChangelog = [
-    warningEntry,
-    ...mergedChangelog.filter(day => day.date !== "_DO_NOT_EDIT")
-  ];
+  const finalChangelog = [warningEntry, ...mergedChangelog.filter((day) => day.date !== '_DO_NOT_EDIT')];
 
   // Сохраняем JSON
   const jsonPath = path.join(ROOT_DIR, 'website/src/data/changelog.json');

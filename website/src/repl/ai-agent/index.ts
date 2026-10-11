@@ -14,13 +14,5 @@
  */
 
 export { SYSTEM_PROMPT } from './system-prompt';
-export {
-  SOUND_CATEGORIES,
-  DRUM_MACHINES,
-} from './tools';
-export {
-  KNOWLEDGE_BASE,
-  searchKnowledge,
-  getKnowledgeByCategory,
-  formatKnowledgeForContext,
-} from './knowledge';
+export { SOUND_CATEGORIES, DRUM_MACHINES } from './tools';
+export { KNOWLEDGE_BASE, searchKnowledge, getKnowledgeByCategory, formatKnowledgeForContext } from './knowledge';

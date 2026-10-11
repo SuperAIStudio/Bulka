@@ -6,13 +6,29 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import cx from '@src/cx.mjs';
 import ReactMarkdown from 'react-markdown';
 import { useChatContext } from '../../useChatContext';
-import { useSettings, setOpenaiApiKey, setAnthropicApiKey, setGeminiApiKey, setZaiApiKey, setOpenrouterApiKey, setLocalBaseUrl, setLocalApiKey, setLocalModelParams, setAiProvider, setAiModel, setOpenrouterModelParams, getApiKeyForProvider } from '../../../settings.mjs';
+import {
+  useSettings,
+  setOpenaiApiKey,
+  setAnthropicApiKey,
+  setGeminiApiKey,
+  setZaiApiKey,
+  setOpenrouterApiKey,
+  setLocalBaseUrl,
+  setLocalApiKey,
+  setLocalModelParams,
+  setAiProvider,
+  setAiModel,
+  setOpenrouterModelParams,
+  getApiKeyForProvider,
+} from '../../../settings.mjs';
 import { getRandomSuggestions } from '../../data/suggestions.js';
 
 // Common input styles matching SettingsTab
-const inputClass = 'w-full p-2 bg-background rounded-md text-foreground border border-foreground/30 focus:border-foreground focus:outline-none';
+const inputClass =
+  'w-full p-2 bg-background rounded-md text-foreground border border-foreground/30 focus:border-foreground focus:outline-none';
 const selectClass = 'w-full p-2 bg-background rounded-md text-foreground border border-foreground/30';
-const buttonClass = 'px-4 py-2 rounded-md bg-background text-foreground border border-foreground/30 hover:bg-lineBackground disabled:opacity-50';
+const buttonClass =
+  'px-4 py-2 rounded-md bg-background text-foreground border border-foreground/30 hover:bg-lineBackground disabled:opacity-50';
 
 // Provider display names for the chat header
 const PROVIDER_LABELS = {
@@ -141,9 +157,7 @@ async function fetchFreeModels() {
     clearTimeout(timer);
     if (!resp.ok) return fallback;
     const data = await resp.json();
-    const ids = (data.data || [])
-      .map((m) => m.id)
-      .filter((id) => id && !FREE_AI_NON_CHAT.test(id));
+    const ids = (data.data || []).map((m) => m.id).filter((id) => id && !FREE_AI_NON_CHAT.test(id));
     if (ids.length === 0) return fallback;
     // Дефолтную модель — первой.
     ids.sort((a, b) => (a === FREE_AI_DEFAULT_MODEL ? -1 : b === FREE_AI_DEFAULT_MODEL ? 1 : 0));
@@ -157,7 +171,9 @@ async function fetchFreeModels() {
 // Канонический порядок уровней reasoning (OpenRouter): minimal < low < medium < high < xhigh < max.
 const EFFORT_ORDER = ['minimal', 'low', 'medium', 'high', 'xhigh', 'max'];
 const sortEfforts = (arr) =>
-  [...(arr || [])].filter((e) => typeof e === 'string').sort((a, b) => EFFORT_ORDER.indexOf(a) - EFFORT_ORDER.indexOf(b));
+  [...(arr || [])]
+    .filter((e) => typeof e === 'string')
+    .sort((a, b) => EFFORT_ORDER.indexOf(a) - EFFORT_ORDER.indexOf(b));
 
 /**
  * Настройки конкретной OpenRouter-модели. Источник истины — метаданные модели из /models:
@@ -186,12 +202,15 @@ function OpenRouterModelSettings({ modelInfo }) {
 
   // Реальные уровни reasoning модели. Уровнями управляем, только если модель их публикует.
   const efforts = sortEfforts(reasoning?.supported_efforts);
-  const supportsEffort = (supported.includes('reasoning') || supported.includes('reasoning_effort')) && efforts.length > 0;
+  const supportsEffort =
+    (supported.includes('reasoning') || supported.includes('reasoning_effort')) && efforts.length > 0;
   const supportsReasoningBudget = !!reasoning?.supports_max_tokens;
   // reasoning есть, но без настраиваемых уровней/бюджета (напр. mandatory без supported_efforts)
   const reasoningFixed = !!reasoning && !supportsEffort && !supportsReasoningBudget;
 
-  if (!(supportsTemp || supportsTopP || supportsMaxTokens || supportsEffort || supportsReasoningBudget || reasoningFixed)) {
+  if (
+    !(supportsTemp || supportsTopP || supportsMaxTokens || supportsEffort || supportsReasoningBudget || reasoningFixed)
+  ) {
     return <div className="text-xs opacity-60 p-2">У этой модели нет настраиваемых параметров.</div>;
   }
 
@@ -205,8 +224,11 @@ function OpenRouterModelSettings({ modelInfo }) {
   const update = (patch) => setOpenrouterModelParams(modelId, patch);
   const reset = () =>
     setOpenrouterModelParams(modelId, {
-      temperature: undefined, top_p: undefined, max_tokens: undefined,
-      reasoning_effort: undefined, reasoning_max_tokens: undefined,
+      temperature: undefined,
+      top_p: undefined,
+      max_tokens: undefined,
+      reasoning_effort: undefined,
+      reasoning_max_tokens: undefined,
     });
 
   const hasPublishedDefaults = defaults && Object.keys(defaults).some((k) => defaults[k] != null);
@@ -225,11 +247,11 @@ function OpenRouterModelSettings({ modelInfo }) {
             value={reasoningEffort}
             onChange={(e) => update({ reasoning_effort: e.target.value || undefined })}
           >
-            <option value="">
-              по умолчанию{reasoning?.default_effort ? ` (${reasoning.default_effort})` : ''}
-            </option>
+            <option value="">по умолчанию{reasoning?.default_effort ? ` (${reasoning.default_effort})` : ''}</option>
             {efforts.map((e) => (
-              <option key={e} value={e}>{e}</option>
+              <option key={e} value={e}>
+                {e}
+              </option>
             ))}
           </select>
         </label>
@@ -252,37 +274,65 @@ function OpenRouterModelSettings({ modelInfo }) {
 
       {reasoningFixed && (
         <div className="text-[11px] opacity-60">
-          Рассуждения включены{reasoning?.mandatory ? ' (обязательны, не отключаются)' : ''}; уровень у этой модели не настраивается.
+          Рассуждения включены{reasoning?.mandatory ? ' (обязательны, не отключаются)' : ''}; уровень у этой модели не
+          настраивается.
         </div>
       )}
 
       {supportsTemp && (
         <label className="grid gap-1 text-xs">
-          <span>Температура: {Number(temp).toFixed(2)}{saved.temperature == null ? ' (дефолт)' : ''}</span>
-          <input type="range" min="0" max="2" step="0.05" value={temp}
-            onChange={(e) => update({ temperature: parseFloat(e.target.value) })} />
+          <span>
+            Температура: {Number(temp).toFixed(2)}
+            {saved.temperature == null ? ' (дефолт)' : ''}
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.05"
+            value={temp}
+            onChange={(e) => update({ temperature: parseFloat(e.target.value) })}
+          />
         </label>
       )}
 
       {supportsTopP && (
         <label className="grid gap-1 text-xs">
-          <span>top_p: {Number(topP).toFixed(2)}{saved.top_p == null ? ' (дефолт)' : ''}</span>
-          <input type="range" min="0" max="1" step="0.01" value={topP}
-            onChange={(e) => update({ top_p: parseFloat(e.target.value) })} />
+          <span>
+            top_p: {Number(topP).toFixed(2)}
+            {saved.top_p == null ? ' (дефолт)' : ''}
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={topP}
+            onChange={(e) => update({ top_p: parseFloat(e.target.value) })}
+          />
         </label>
       )}
 
       {supportsMaxTokens && (
         <label className="grid gap-1 text-xs">
           <span>Макс. токенов ответа{maxLimit ? ` (лимит ${maxLimit})` : ''}</span>
-          <input type="number" min="1" max={maxLimit || undefined}
+          <input
+            type="number"
+            min="1"
+            max={maxLimit || undefined}
             className={cx(inputClass, 'text-sm py-1')}
-            value={maxTokens} placeholder="по умолчанию"
-            onChange={(e) => update({ max_tokens: e.target.value ? parseInt(e.target.value) : undefined })} />
+            value={maxTokens}
+            placeholder="по умолчанию"
+            onChange={(e) => update({ max_tokens: e.target.value ? parseInt(e.target.value) : undefined })}
+          />
         </label>
       )}
 
-      <button type="button" className="text-xs opacity-60 hover:opacity-100 underline justify-self-start" onClick={reset}>
+      <button
+        type="button"
+        className="text-xs opacity-60 hover:opacity-100 underline justify-self-start"
+        onClick={reset}
+      >
         Сбросить к дефолтам
       </button>
     </div>
@@ -314,7 +364,8 @@ function SettingsPanel({ onClose, isBottomPanel }) {
   // Initialize model from settings or first available
   const [model, setModel] = useState(() => {
     if (settings.aiModel) return settings.aiModel;
-    const providerModels = initialModels?.[settings.aiProvider || 'openai'] || EMPTY_MODELS[settings.aiProvider || 'openai'];
+    const providerModels =
+      initialModels?.[settings.aiProvider || 'openai'] || EMPTY_MODELS[settings.aiProvider || 'openai'];
     return providerModels[0]?.value || '';
   });
   const [loadingModels, setLoadingModels] = useState({
@@ -328,70 +379,80 @@ function SettingsPanel({ onClose, isBottomPanel }) {
   });
 
   // Get current API key for provider
-  const getKeyForProvider = useCallback((p) => {
-    switch (p) {
-      case 'openai': return openaiKey;
-      case 'anthropic': return anthropicKey;
-      case 'gemini': return geminiKey;
-      case 'zai': return zaiKey;
-      case 'openrouter': return openrouterKey;
-      default: return '';
-    }
-  }, [openaiKey, anthropicKey, geminiKey, zaiKey, openrouterKey]);
+  const getKeyForProvider = useCallback(
+    (p) => {
+      switch (p) {
+        case 'openai':
+          return openaiKey;
+        case 'anthropic':
+          return anthropicKey;
+        case 'gemini':
+          return geminiKey;
+        case 'zai':
+          return zaiKey;
+        case 'openrouter':
+          return openrouterKey;
+        default:
+          return '';
+      }
+    },
+    [openaiKey, anthropicKey, geminiKey, zaiKey, openrouterKey],
+  );
 
   // Fetch models when API key changes (or for free without key)
-  const loadModelsForProvider = useCallback(async (p, key) => {
-    // Бесплатный провайдер (free → OVHcloud) не требует ключ
-    if (p !== 'free' && (!key || key.length < 10)) return;
+  const loadModelsForProvider = useCallback(
+    async (p, key) => {
+      // Бесплатный провайдер (free → OVHcloud) не требует ключ
+      if (p !== 'free' && (!key || key.length < 10)) return;
 
-    setLoadingModels(prev => ({ ...prev, [p]: true }));
-    try {
-      const fetchedModels = p === 'free'
-        ? await fetchFreeModels()
-        : await fetchModels(p, key);
+      setLoadingModels((prev) => ({ ...prev, [p]: true }));
+      try {
+        const fetchedModels = p === 'free' ? await fetchFreeModels() : await fetchModels(p, key);
 
-      if (fetchedModels && fetchedModels.length > 0) {
-        setModels(prev => {
-          const updated = { ...prev, [p]: fetchedModels };
-          // Save to localStorage (except free which is dynamic)
-          if (p !== 'free') {
-            saveCachedModels(updated);
+        if (fetchedModels && fetchedModels.length > 0) {
+          setModels((prev) => {
+            const updated = { ...prev, [p]: fetchedModels };
+            // Save to localStorage (except free which is dynamic)
+            if (p !== 'free') {
+              saveCachedModels(updated);
+            }
+            return updated;
+          });
+          // Set first model as default if current model not in list
+          if (p === provider && !fetchedModels.find((m) => m.value === model)) {
+            setModel(fetchedModels[0].value);
           }
-          return updated;
-        });
-        // Set first model as default if current model not in list
-        if (p === provider && !fetchedModels.find(m => m.value === model)) {
-          setModel(fetchedModels[0].value);
         }
+      } catch (e) {
+        console.error(`Error loading models for ${p}:`, e);
+      } finally {
+        setLoadingModels((prev) => ({ ...prev, [p]: false }));
       }
-    } catch (e) {
-      console.error(`Error loading models for ${p}:`, e);
-    } finally {
-      setLoadingModels(prev => ({ ...prev, [p]: false }));
-    }
-  }, [provider, model]);
+    },
+    [provider, model],
+  );
 
   // Загрузка бесплатных моделей (OVHcloud) — при выборе провайдера/обновлении
   const loadFreeModels = useCallback(async () => {
-    setLoadingModels(prev => ({ ...prev, free: true }));
-    setModels(prev => ({ ...prev, free: [] })); // очищаем, показываем «Загрузка…»
+    setLoadingModels((prev) => ({ ...prev, free: true }));
+    setModels((prev) => ({ ...prev, free: [] })); // очищаем, показываем «Загрузка…»
     try {
       const fetchedModels = await fetchFreeModels();
       if (fetchedModels && fetchedModels.length > 0) {
-        setModels(prev => ({ ...prev, free: fetchedModels }));
+        setModels((prev) => ({ ...prev, free: fetchedModels }));
         setModel(fetchedModels[0].value);
       }
     } catch (e) {
       console.error('Error loading free AI models:', e);
     } finally {
-      setLoadingModels(prev => ({ ...prev, free: false }));
+      setLoadingModels((prev) => ({ ...prev, free: false }));
     }
   }, []);
 
   // Загрузка списка моделей с локального OpenAI-совместимого сервера (LM Studio / Ollama).
   const loadLocalModels = useCallback(async (url, key) => {
-    setLoadingModels(prev => ({ ...prev, local: true }));
-    setModels(prev => ({ ...prev, local: [] }));
+    setLoadingModels((prev) => ({ ...prev, local: true }));
+    setModels((prev) => ({ ...prev, local: [] }));
     try {
       const r = await fetch('/api/models', {
         method: 'POST',
@@ -400,13 +461,13 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       });
       const data = await r.json();
       if (data.models && data.models.length > 0) {
-        setModels(prev => ({ ...prev, local: data.models }));
+        setModels((prev) => ({ ...prev, local: data.models }));
         setModel(data.models[0].value);
       }
     } catch (e) {
       console.error('Error loading local models:', e);
     } finally {
-      setLoadingModels(prev => ({ ...prev, local: false }));
+      setLoadingModels((prev) => ({ ...prev, local: false }));
     }
   }, []);
 
@@ -429,7 +490,13 @@ function SettingsPanel({ onClose, isBottomPanel }) {
   }, []); // Only on mount
 
   // Track previous key values to detect changes
-  const prevKeysRef = useRef({ openai: openaiKey, anthropic: anthropicKey, gemini: geminiKey, zai: zaiKey, openrouter: openrouterKey });
+  const prevKeysRef = useRef({
+    openai: openaiKey,
+    anthropic: anthropicKey,
+    gemini: geminiKey,
+    zai: zaiKey,
+    openrouter: openrouterKey,
+  });
 
   // Load models when key is first added (changes from empty to non-empty)
   useEffect(() => {
@@ -452,7 +519,13 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       loadModelsForProvider('openrouter', openrouterKey);
     }
 
-    prevKeysRef.current = { openai: openaiKey, anthropic: anthropicKey, gemini: geminiKey, zai: zaiKey, openrouter: openrouterKey };
+    prevKeysRef.current = {
+      openai: openaiKey,
+      anthropic: anthropicKey,
+      gemini: geminiKey,
+      zai: zaiKey,
+      openrouter: openrouterKey,
+    };
   }, [openaiKey, anthropicKey, geminiKey, zaiKey, openrouterKey, loadModelsForProvider]);
 
   const handleSave = () => {
@@ -472,15 +545,24 @@ function SettingsPanel({ onClose, isBottomPanel }) {
   // Check if current provider has API key (free doesn't need one)
   const currentProviderHasKey = () => {
     switch (provider) {
-      case 'free': return true; // No API key needed
-      case 'mcp': return true; // внешний агент — ключ не нужен
-      case 'local': return true; // локальная модель — ключ опционален, адрес с дефолтом
-      case 'openai': return openaiKey.trim().length > 0;
-      case 'anthropic': return anthropicKey.trim().length > 0;
-      case 'gemini': return geminiKey.trim().length > 0;
-      case 'zai': return zaiKey.trim().length > 0;
-      case 'openrouter': return openrouterKey.trim().length > 0;
-      default: return false;
+      case 'free':
+        return true; // No API key needed
+      case 'mcp':
+        return true; // внешний агент — ключ не нужен
+      case 'local':
+        return true; // локальная модель — ключ опционален, адрес с дефолтом
+      case 'openai':
+        return openaiKey.trim().length > 0;
+      case 'anthropic':
+        return anthropicKey.trim().length > 0;
+      case 'gemini':
+        return geminiKey.trim().length > 0;
+      case 'zai':
+        return zaiKey.trim().length > 0;
+      case 'openrouter':
+        return openrouterKey.trim().length > 0;
+      default:
+        return false;
     }
   };
 
@@ -541,8 +623,8 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       {isLocal && (
         <div className="grid gap-2 p-2 rounded-md border border-foreground/20">
           <p className="text-xs opacity-70">
-            Локальный OpenAI-совместимый сервер. Запусти LM Studio (Local Server) или Ollama и укажи адрес. Запрос
-            идёт через приложение (работает в десктоп-версии; ключ обычно не нужен).
+            Локальный OpenAI-совместимый сервер. Запусти LM Studio (Local Server) или Ollama и укажи адрес. Запрос идёт
+            через приложение (работает в десктоп-версии; ключ обычно не нужен).
           </p>
           <div className="grid gap-1">
             <label className="text-xs">Адрес сервера (base URL)</label>
@@ -554,8 +636,12 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               className={cx(inputClass, 'text-sm py-1')}
             />
             <div className="flex gap-2 text-xs opacity-60">
-              <button type="button" className="underline" onClick={() => setLocalUrl('http://localhost:1234/v1')}>LM Studio</button>
-              <button type="button" className="underline" onClick={() => setLocalUrl('http://localhost:11434/v1')}>Ollama</button>
+              <button type="button" className="underline" onClick={() => setLocalUrl('http://localhost:1234/v1')}>
+                LM Studio
+              </button>
+              <button type="button" className="underline" onClick={() => setLocalUrl('http://localhost:11434/v1')}>
+                Ollama
+              </button>
             </div>
           </div>
           <div className="grid gap-1">
@@ -587,7 +673,9 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               </label>
               <input
                 type="range"
-                min="0" max="2" step="0.05"
+                min="0"
+                max="2"
+                step="0.05"
                 value={localParams.temperature ?? 0.7}
                 onChange={(e) => setLP({ temperature: parseFloat(e.target.value) })}
                 className="w-full accent-foreground"
@@ -602,12 +690,17 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               </label>
               <input
                 type="number"
-                min="256" max="131072" step="256"
+                min="256"
+                max="131072"
+                step="256"
                 value={localParams.max_tokens ?? 8192}
                 onChange={(e) => setLP({ max_tokens: Math.max(1, parseInt(e.target.value) || 0) })}
                 className={cx(inputClass, 'text-sm py-1')}
               />
-              <span className="text-[11px] opacity-50">Ограничивает длину ответа. Для «думающих» моделей — потолок размышлений (меньше = быстрее отвечает, не зацикливается).</span>
+              <span className="text-[11px] opacity-50">
+                Ограничивает длину ответа. Для «думающих» моделей — потолок размышлений (меньше = быстрее отвечает, не
+                зацикливается).
+              </span>
             </div>
 
             <div className="grid gap-1">
@@ -617,7 +710,9 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               </label>
               <input
                 type="range"
-                min="0" max="1" step="0.05"
+                min="0"
+                max="1"
+                step="0.05"
                 value={localParams.top_p ?? 1}
                 onChange={(e) => setLP({ top_p: parseFloat(e.target.value) })}
                 className="w-full accent-foreground"
@@ -646,14 +741,27 @@ function SettingsPanel({ onClose, isBottomPanel }) {
             <details className="text-[11px] rounded-md border border-yellow-500/30 bg-yellow-500/10 p-2">
               <summary className="cursor-pointer text-yellow-400/90">Модель «думает» бесконечно? (Qwen и др.)</summary>
               <div className="mt-1 space-y-1 text-yellow-400/80">
-                <p>LM Studio игнорирует управление размышлениями из API — оно зашито в шаблон промпта модели. Чтобы выключить thinking:</p>
+                <p>
+                  LM Studio игнорирует управление размышлениями из API — оно зашито в шаблон промпта модели. Чтобы
+                  выключить thinking:
+                </p>
                 <ol className="list-decimal ml-4 space-y-0.5">
-                  <li>LM Studio → <b>My Models</b> → выбери модель.</li>
-                  <li><b>Inference</b> → <b>Prompt Template (Jinja)</b>.</li>
-                  <li>В начало шаблона добавь: <code className="bg-black/30 px-1 rounded">{'{%- set enable_thinking = false %}'}</code></li>
+                  <li>
+                    LM Studio → <b>My Models</b> → выбери модель.
+                  </li>
+                  <li>
+                    <b>Inference</b> → <b>Prompt Template (Jinja)</b>.
+                  </li>
+                  <li>
+                    В начало шаблона добавь:{' '}
+                    <code className="bg-black/30 px-1 rounded">{'{%- set enable_thinking = false %}'}</code>
+                  </li>
                   <li>Перезагрузи модель (Eject → Load).</li>
                 </ol>
-                <p>Либо возьми не-thinking вариант модели (Instruct). Сэмплинг для non-thinking: temp 0.7, top_p 0.8, top_k 20.</p>
+                <p>
+                  Либо возьми не-thinking вариант модели (Instruct). Сэмплинг для non-thinking: temp 0.7, top_p 0.8,
+                  top_k 20.
+                </p>
               </div>
             </details>
 
@@ -671,8 +779,13 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       {/* Бесплатный провайдер (OVHcloud) — инфо-подсказка */}
       {isFree && (
         <div className="p-2 bg-yellow-500/10 rounded-md border border-yellow-500/30 space-y-1">
-          <p className="text-xs text-yellow-400">✓ Бесплатно, без ключа и регистрации — работает прямо из браузера (OVHcloud AI).</p>
-          <p className="text-xs text-yellow-400/80">Лимит бесплатного тарифа — 2 запроса в минуту. Если упрётесь, подождите ~30 секунд или укажите свой ключ / OpenRouter. Инструменты (автозапуск, правка кода) могут поддерживаться не всеми моделями.</p>
+          <p className="text-xs text-yellow-400">
+            ✓ Бесплатно, без ключа и регистрации — работает прямо из браузера (OVHcloud AI).
+          </p>
+          <p className="text-xs text-yellow-400/80">
+            Лимит бесплатного тарифа — 2 запроса в минуту. Если упрётесь, подождите ~30 секунд или укажите свой ключ /
+            OpenRouter. Инструменты (автозапуск, правка кода) могут поддерживаться не всеми моделями.
+          </p>
         </div>
       )}
 
@@ -691,47 +804,47 @@ function SettingsPanel({ onClose, isBottomPanel }) {
 
       {/* Model selection (не нужен для MCP) */}
       {!isMcp && (
-      <div className="grid gap-1">
-        <label className="text-xs flex items-center gap-1">
-          Модель
-          {isLoadingCurrentModels && <span className="opacity-50">...</span>}
-        </label>
-        <div className="flex gap-1">
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className={cx(selectClass, 'flex-1 text-sm py-1.5')}
-            disabled={isLoadingCurrentModels || currentModels.length === 0}
-          >
-            {currentModels.length === 0 ? (
-              <option value="">
-                {isLoadingCurrentModels ? 'Загрузка моделей...' : 'Нет моделей'}
-              </option>
-            ) : (
-              currentModels.map((m) => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))
-            )}
-          </select>
-          <button
-            type="button"
-            onClick={() => {
-              if (isFree) {
-                loadFreeModels();
-              } else if (isLocal) {
-                loadLocalModels(localUrl, localKey);
-              } else {
-                loadModelsForProvider(provider, getKeyForProvider(provider));
-              }
-            }}
-            disabled={isLoadingCurrentModels || (!isFree && !currentProviderHasKey())}
-            className="px-2 text-sm rounded border border-foreground/30 hover:bg-lineBackground disabled:opacity-30"
-            title="Обновить модели"
-          >
-            ↻
-          </button>
+        <div className="grid gap-1">
+          <label className="text-xs flex items-center gap-1">
+            Модель
+            {isLoadingCurrentModels && <span className="opacity-50">...</span>}
+          </label>
+          <div className="flex gap-1">
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className={cx(selectClass, 'flex-1 text-sm py-1.5')}
+              disabled={isLoadingCurrentModels || currentModels.length === 0}
+            >
+              {currentModels.length === 0 ? (
+                <option value="">{isLoadingCurrentModels ? 'Загрузка моделей...' : 'Нет моделей'}</option>
+              ) : (
+                currentModels.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))
+              )}
+            </select>
+            <button
+              type="button"
+              onClick={() => {
+                if (isFree) {
+                  loadFreeModels();
+                } else if (isLocal) {
+                  loadLocalModels(localUrl, localKey);
+                } else {
+                  loadModelsForProvider(provider, getKeyForProvider(provider));
+                }
+              }}
+              disabled={isLoadingCurrentModels || (!isFree && !currentProviderHasKey())}
+              className="px-2 text-sm rounded border border-foreground/30 hover:bg-lineBackground disabled:opacity-30"
+              title="Обновить модели"
+            >
+              ↻
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
       {/* Настройки конкретной модели OpenRouter (reasoning/temperature/top_p/max_tokens) */}
@@ -816,16 +929,46 @@ function SettingsPanel({ onClose, isBottomPanel }) {
           disabled={!currentProviderHasKey() || (!isFree && !isMcp && currentModels.length === 0)}
           className={cx(buttonClass, 'text-sm py-1.5')}
         >
-          {isFree || isMcp || isLocal ? 'Использовать' : (currentProviderHasKey() ? 'Сохранить' : 'Введите ключ')}
+          {isFree || isMcp || isLocal ? 'Использовать' : currentProviderHasKey() ? 'Сохранить' : 'Введите ключ'}
         </button>
         {!isFree && !isMcp && !isLocal && (
           <div className="text-xs opacity-70 flex gap-2">
             <span>Получить:</span>
-            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" className="underline hover:opacity-50">OpenAI</a>
-            <a href="https://console.anthropic.com/" target="_blank" rel="noopener" className="underline hover:opacity-50">Anthropic</a>
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="underline hover:opacity-50">Gemini</a>
-            <a href="https://z.ai/manage-apikey/apikey-list" target="_blank" rel="noopener" className="underline hover:opacity-50">Z.AI</a>
-            <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="underline hover:opacity-50">OpenRouter</a>
+            <a
+              href="https://platform.openai.com/api-keys"
+              target="_blank"
+              rel="noopener"
+              className="underline hover:opacity-50"
+            >
+              OpenAI
+            </a>
+            <a
+              href="https://console.anthropic.com/"
+              target="_blank"
+              rel="noopener"
+              className="underline hover:opacity-50"
+            >
+              Anthropic
+            </a>
+            <a
+              href="https://aistudio.google.com/apikey"
+              target="_blank"
+              rel="noopener"
+              className="underline hover:opacity-50"
+            >
+              Gemini
+            </a>
+            <a
+              href="https://z.ai/manage-apikey/apikey-list"
+              target="_blank"
+              rel="noopener"
+              className="underline hover:opacity-50"
+            >
+              Z.AI
+            </a>
+            <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="underline hover:opacity-50">
+              OpenRouter
+            </a>
           </div>
         )}
       </div>
@@ -846,10 +989,8 @@ function Message({ message }) {
       <div
         className={cx(
           'max-w-[85%] rounded-lg px-3 py-2 text-sm break-words overflow-hidden [overflow-wrap:anywhere]',
-          isUser
-            ? 'bg-selection text-foreground'
-            : 'bg-background text-foreground border border-foreground/20',
-          message.isThinking && 'opacity-70 italic'
+          isUser ? 'bg-selection text-foreground' : 'bg-background text-foreground border border-foreground/20',
+          message.isThinking && 'opacity-70 italic',
         )}
       >
         {/* Thinking toggle button */}
@@ -871,9 +1012,7 @@ function Message({ message }) {
         )}
 
         {isUser ? (
-          <div className="whitespace-pre-wrap break-words">
-            {message.content || '...'}
-          </div>
+          <div className="whitespace-pre-wrap break-words">{message.content || '...'}</div>
         ) : (
           <div className="markdown-content prose prose-sm prose-invert max-w-none break-words [overflow-wrap:anywhere]">
             <ReactMarkdown
@@ -886,7 +1025,9 @@ function Message({ message }) {
                     </code>
                   ) : (
                     <pre className="bg-lineHighlight p-2 rounded overflow-x-auto my-2">
-                      <code className="text-xs" {...props}>{children}</code>
+                      <code className="text-xs" {...props}>
+                        {children}
+                      </code>
                     </pre>
                   );
                 },
@@ -965,7 +1106,7 @@ export function ChatTab({ context, isBottomPanel }) {
 
     // Countdown interval
     countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
+      setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownRef.current);
           return 0;
@@ -1022,9 +1163,12 @@ export function ChatTab({ context, isBottomPanel }) {
   }, []);
 
   // Start pending suggestion
-  const startPendingSuggestion = useCallback((suggestion) => {
-    startPendingMessage('suggestion', suggestion.prompt, () => chat.sendMessage(suggestion.prompt));
-  }, [startPendingMessage, chat.sendMessage]);
+  const startPendingSuggestion = useCallback(
+    (suggestion) => {
+      startPendingMessage('suggestion', suggestion.prompt, () => chat.sendMessage(suggestion.prompt));
+    },
+    [startPendingMessage, chat.sendMessage],
+  );
 
   // Show settings if no API key
   if (!chat.hasApiKey || showSettings) {
@@ -1036,10 +1180,7 @@ export function ChatTab({ context, isBottomPanel }) {
             <span className="text-sm font-medium">Bulka AI</span>
           </div>
           {chat.hasApiKey && (
-            <button
-              onClick={() => setShowSettings(false)}
-              className="text-xs hover:opacity-50"
-            >
+            <button onClick={() => setShowSettings(false)} className="text-xs hover:opacity-50">
               ← Назад
             </button>
           )}
@@ -1060,17 +1201,11 @@ export function ChatTab({ context, isBottomPanel }) {
         </div>
         <div className="flex gap-2">
           {chat.messages.length > 0 && (
-            <button
-              onClick={chat.clearMessages}
-              className="text-xs hover:opacity-50"
-            >
+            <button onClick={chat.clearMessages} className="text-xs hover:opacity-50">
               Очистить
             </button>
           )}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="text-xs hover:opacity-50"
-          >
+          <button onClick={() => setShowSettings(true)} className="text-xs hover:opacity-50">
             ⚙️
           </button>
         </div>
@@ -1090,7 +1225,7 @@ export function ChatTab({ context, isBottomPanel }) {
           </button>
         ))}
         <button
-          onClick={() => setSuggestionsKey(k => k + 1)}
+          onClick={() => setSuggestionsKey((k) => k + 1)}
           disabled={pendingMessage}
           className="px-2 py-1 text-xs rounded-md bg-background border border-foreground/30 hover:opacity-50 opacity-50 disabled:opacity-30"
           title="Показать другие варианты"
@@ -1105,9 +1240,7 @@ export function ChatTab({ context, isBottomPanel }) {
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="text-4xl mb-4">🎵</div>
             <h3 className="text-lg font-medium mb-2">Привет!</h3>
-            <p className="text-sm opacity-70 max-w-sm">
-              Я помогу тебе писать музыку. Опиши что хочешь создать.
-            </p>
+            <p className="text-sm opacity-70 max-w-sm">Я помогу тебе писать музыку. Опиши что хочешь создать.</p>
           </div>
         ) : (
           <>
@@ -1163,18 +1296,25 @@ export function ChatTab({ context, isBottomPanel }) {
 
       {/* Pending Message with countdown timer (unified for errors and suggestions) */}
       {pendingMessage && (
-        <div className={cx(
-          'mx-3 mb-2 p-2 text-xs rounded-md border',
-          pendingMessage.type === 'error'
-            ? 'bg-orange-500/10 border-orange-500/30'
-            : 'bg-blue-500/10 border-blue-500/30'
-        )}>
+        <div
+          className={cx(
+            'mx-3 mb-2 p-2 text-xs rounded-md border',
+            pendingMessage.type === 'error'
+              ? 'bg-orange-500/10 border-orange-500/30'
+              : 'bg-blue-500/10 border-blue-500/30',
+          )}
+        >
           <div className="flex flex-col gap-2">
             <div className="flex items-start gap-2">
               <span className={pendingMessage.type === 'error' ? 'text-orange-400' : 'text-blue-400'}>
                 {pendingMessage.type === 'error' ? '⚠️' : '💡'}
               </span>
-              <span className={cx('flex-1 break-words', pendingMessage.type === 'error' ? 'text-orange-300' : 'text-blue-300')}>
+              <span
+                className={cx(
+                  'flex-1 break-words',
+                  pendingMessage.type === 'error' ? 'text-orange-300' : 'text-blue-300',
+                )}
+              >
                 {pendingMessage.text}
               </span>
             </div>
@@ -1189,7 +1329,7 @@ export function ChatTab({ context, isBottomPanel }) {
                     'px-2 py-1 text-xs rounded border',
                     pendingMessage.type === 'error'
                       ? 'bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/50 text-orange-300'
-                      : 'bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/50 text-blue-300'
+                      : 'bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/50 text-blue-300',
                   )}
                 >
                   ✕ Отмена
@@ -1200,7 +1340,7 @@ export function ChatTab({ context, isBottomPanel }) {
                     'px-2 py-1 text-xs rounded border',
                     pendingMessage.type === 'error'
                       ? 'bg-orange-500/30 hover:bg-orange-500/40 border-orange-500/50 text-orange-200'
-                      : 'bg-blue-500/30 hover:bg-blue-500/40 border-blue-500/50 text-blue-200'
+                      : 'bg-blue-500/30 hover:bg-blue-500/40 border-blue-500/50 text-blue-200',
                   )}
                 >
                   📤 Сейчас
@@ -1233,11 +1373,7 @@ export function ChatTab({ context, isBottomPanel }) {
               ⏹
             </button>
           ) : (
-            <button
-              type="submit"
-              disabled={!chat.input.trim()}
-              className={cx(buttonClass, 'px-3')}
-            >
+            <button type="submit" disabled={!chat.input.trim()} className={cx(buttonClass, 'px-3')}>
               ↵
             </button>
           )}
