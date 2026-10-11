@@ -55,6 +55,8 @@ for (const rel of files) {
     const target = path.posix.relative(path.posix.dirname(`en/${rel}`), path.posix.join(path.posix.dirname(rel), dep));
     text = text.split(`'./${dep}'`).join(`'${target}'`).split(`"./${dep}"`).join(`"${target}"`);
   }
+  // Upstream pages carry trailing spaces only inside code and tunes, where they mean nothing.
+  text = text.replace(/[ \t]+$/gm, '');
   const dest = path.join(OUT, rel);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, text);

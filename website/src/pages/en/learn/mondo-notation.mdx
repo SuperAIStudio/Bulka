@@ -14,9 +14,9 @@ Here's an example:
 <MiniRepl
   mondo
   client:idle
-  tune={`$ note (c2 # euclid <3 6 3> <8 16>) # *2 
+  tune={`$ note (c2 # euclid <3 6 3> <8 16>) # *2
   # s "sine" # add (note [0 <12 24>]*2)
-  # dec(sine # range .2 2) 
+  # dec(sine # range .2 2)
   # room .5
   # lpf (sine/3 # range 120 400)
   # lpenv (rand # range .5 4)
@@ -105,9 +105,9 @@ Similar to how "." works in javascript (JS), we can chain functions calls with t
 <MiniRepl
   mondo
   client:idle
-  tune={`n <0 2 4 [3 1] -1>*4 
- # scale C4:minor 
- # jux rev 
+  tune={`n <0 2 4 [3 1] -1>*4
+ # scale C4:minor
+ # jux rev
  # dec .2
  # delay .5`}
 />

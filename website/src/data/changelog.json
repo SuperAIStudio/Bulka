@@ -13,6 +13,15 @@
         "type": "other",
         "typeLabel": "Прочее",
         "emoji": "📦",
+        "description": "build.sh: the deploy folder no longer takes the TMP variable the linker writes to; docs index for the desktop pages",
+        "scope": null,
+        "author": "Nerual Dreming",
+        "hash": "869ae3d60"
+      },
+      {
+        "type": "other",
+        "typeLabel": "Прочее",
+        "emoji": "📦",
         "description": "Desktop for Windows, Linux and macOS",
         "scope": null,
         "author": "Nerual Dreming",
