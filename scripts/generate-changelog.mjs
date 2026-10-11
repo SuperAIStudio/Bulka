@@ -2,18 +2,16 @@
 /**
  * Генератор changelog для Bulka
  *
- * Читает историю git коммитов и создаёт:
- * 1. JSON файл для страницы /whatsnew
- * 2. CHANGELOG.md в формате Keep a Changelog
+ * Читает историю git-коммитов и пишет website/src/data/changelog.json для страницы /whatsnew.
  *
- * Запуск: node scripts/generate-changelog.js
+ * Запуск: node scripts/generate-changelog.mjs [--since-date=YYYY-MM-DD]
  *
  * ⚠️  ВАЖНО: НИКОГДА не редактируй website/src/data/changelog.json вручную!
  *     Всегда запускай этот скрипт: pnpm changelog
  *     Скрипт автоматически читает коммиты из git и генерирует changelog.
  */
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -82,14 +80,8 @@ function parseCommit(line) {
 
 function getExistingChangelog() {
   const jsonPath = path.join(ROOT_DIR, 'website/src/data/changelog.json');
-  if (fs.existsSync(jsonPath)) {
-    try {
-      return JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-    } catch (e) {
-      return [];
-    }
-  }
-  return [];
+  if (!fs.existsSync(jsonPath)) return [];
+  return JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
 }
 
 function getLastKnownHash(existingChangelog) {
@@ -102,23 +94,20 @@ function getLastKnownHash(existingChangelog) {
   return null;
 }
 
-function getGitLog(sinceHash = null) {
-  try {
-    // Если есть хэш - берём только новые коммиты
-    const range = sinceHash ? `${sinceHash}..HEAD` : '';
-    const log = execSync(
-      `git log ${range} --pretty=format:"%ad|%s|%an|%h" --date=short`,
-      { encoding: 'utf-8', cwd: ROOT_DIR, maxBuffer: 10 * 1024 * 1024 }
-    );
+function getGitLog({ sinceHash = null, sinceDate = null } = {}) {
+  const args = ['log', '--pretty=format:%ad|%s|%an|%h', '--date=short'];
+  if (sinceHash) args.push(`${sinceHash}..HEAD`);
+  if (sinceDate) args.push(`--since=${sinceDate}`);
+  const log = execFileSync('git', args, { encoding: 'utf-8', cwd: ROOT_DIR, maxBuffer: 10 * 1024 * 1024 });
+  return log.split('\n').filter(Boolean).map(parseCommit).filter(Boolean);
+}
 
-    return log
-      .split('\n')
-      .filter(Boolean)
-      .map(parseCommit)
-      .filter(Boolean);
-  } catch (error) {
-    console.error('Ошибка чтения git log:', error.message);
-    return [];
+function commitExists(hash) {
+  try {
+    execFileSync('git', ['cat-file', '-e', `${hash}^{commit}`], { cwd: ROOT_DIR, stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -220,12 +209,23 @@ function main() {
   const existingChangelog = getExistingChangelog();
   const lastHash = getLastKnownHash(existingChangelog);
 
+  const sinceDateArg = process.argv.find((a) => a.startsWith('--since-date='));
+  const sinceDate = sinceDateArg ? sinceDateArg.slice('--since-date='.length) : null;
+  if (sinceDate && !/^\d{4}-\d{2}-\d{2}$/.test(sinceDate)) {
+    throw new Error(`--since-date ждёт YYYY-MM-DD, получено «${sinceDate}»`);
+  }
+
   if (lastHash) {
     console.log(`📌 Последний известный коммит: ${lastHash}`);
   }
+  if (lastHash && !sinceDate && !commitExists(lastHash)) {
+    throw new Error(
+      `Коммита ${lastHash} из changelog.json нет в истории (история переписана). ` +
+        'Запусти один раз: node scripts/generate-changelog.mjs --since-date=<день после последней записи>',
+    );
+  }
 
-  // Получаем только новые коммиты
-  const newCommits = getGitLog(lastHash);
+  const newCommits = sinceDate ? getGitLog({ sinceDate }) : getGitLog({ sinceHash: lastHash });
 
   if (newCommits.length === 0) {
     console.log('✅ Changelog актуален, новых коммитов нет.\n');
@@ -268,4 +268,9 @@ function main() {
   console.log(`\n✨ Добавлено ${newCommits.length} новых записей!`);
 }
 
-main();
+try {
+  main();
+} catch (error) {
+  console.error(`[ERROR] changelog: ${error.message}`);
+  process.exit(1);
+}

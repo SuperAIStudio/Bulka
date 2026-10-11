@@ -5,7 +5,7 @@
   "description": "Bulka — платформа для лайв-кодинга музыки в браузере",
   "scripts": {
     "setup": "pnpm i",
-    "changelog": "node scripts/generate-changelog.js",
+    "changelog": "node scripts/generate-changelog.mjs",
     "pretest": "npm run jsdoc-json",
     "prebuild": "npm run changelog",
     "prestart": "npm run jsdoc-json",
