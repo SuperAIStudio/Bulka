@@ -13,6 +13,15 @@
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
+        "description": "saving a recording no longer crashes the server where xdg-open is missing (spawn error event had no handler)",
+        "scope": "desktop",
+        "author": "Nerual Dreming",
+        "hash": "ee1accc2d"
+      },
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
         "description": "WAV export in WebKit, MCP calls during window reconnects, exit without the 8 s wait",
         "scope": "desktop",
         "author": "Nerual Dreming",

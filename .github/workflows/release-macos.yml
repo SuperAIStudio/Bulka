@@ -5,6 +5,11 @@ name: macOS build
 # lives. Windows and Linux are built on the release machine: desktop/build.sh, desktop/build-linux-docker.sh.
 
 on:
+  # a pull request that touches the desktop app builds it for macOS too (no release upload without a tag)
+  pull_request:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/release-macos.yml"
   workflow_dispatch:
     inputs:
       tag:
@@ -12,7 +17,7 @@ on:
         required: false
 
 concurrency:
-  group: macos-build-${{ github.ref }}-${{ inputs.tag }}
+  group: macos-build-${{ github.ref }}-${{ inputs.tag || 'pr' }}
   cancel-in-progress: true
 
 permissions:
