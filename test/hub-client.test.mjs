@@ -101,6 +101,22 @@ describe('studio hub client', () => {
     expect(day.dirty).toBe(true);
   });
 
+  it('something counted while the report is out is sent next time', async () => {
+    let release;
+    const fetch = vi.fn(() => new Promise((resolve) => (release = () => resolve({ ok: true, status: 200 }))));
+    const hub = hubWith(fetch);
+    hub.acknowledge(true);
+    hub.count('pattern_play_done');
+    const sending = hub.sendReports();
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    hub.count('pattern_play_done');
+    release();
+    await sending;
+    const [day] = Object.values(hub.state.days);
+    expect(day.dirty).toBe(true);
+    expect(day.counts.pattern_play_done).toBe(2);
+  });
+
   it('a refused report is not sent again, a 429 is', async () => {
     const refused = vi.fn(() => Promise.resolve({ ok: false, status: 400, text: () => Promise.resolve('bad') }));
     const hub = hubWith(refused);

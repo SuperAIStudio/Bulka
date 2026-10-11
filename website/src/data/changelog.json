@@ -13,6 +13,15 @@
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
+        "description": "bot commits (star history chart) stay out of What's new, and the ones already in are removed",
+        "scope": "changelog",
+        "author": "Nerual Dreming",
+        "hash": "3c8b86500"
+      },
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
         "description": "newTrack keeps the page language (the English page went to the Russian root)",
         "scope": "mcp",
         "author": "Nerual Dreming",

@@ -16,6 +16,7 @@ const desktop = process.env.BULKA_DESKTOP === '1';
 const hubUrl = import.meta.env.PUBLIC_STUDIO_HUB_URL || process.env.STUDIO_HUB_URL || '';
 const hubTest = import.meta.env.DEV || process.env.STUDIO_HUB_TEST === '1';
 const build = { desktop, version: desktop ? desktopConf.version : websitePackage.version, hubUrl };
+const notice = { app: 'bulka', lang, version: build.version, ...(hubTest ? { test: '1' } : {}) };
 ---
 
 <!-- Global Metadata -->
@@ -24,27 +25,30 @@ const build = { desktop, version: desktop ? desktopConf.version : websitePackage
 <meta name="generator" content={Astro.generator} />
 <link rel="alternate" type="application/rss+xml" title={`RSS Feed for Bulka`} href={pathInLang('/rss.xml', lang)} />
 <meta name="bulka-build" content={JSON.stringify(build)} />
-<script
-  is:inline
-  defer
-  src={`${hubUrl || DIRECT_URL}/embed/notices.js`}
-  data-app="bulka"
-  data-events="off"
-  data-proxy={hubUrl ? undefined : PROXY_URL}
-  data-lang={lang}
-  data-version={build.version}
-  data-test={hubTest ? '1' : undefined}></script>
-<script is:inline>
-  // notice impressions are counted only once the person agreed to statistics (src/hub/studioHub.mjs keeps the choice)
+<script is:inline define:vars={{ hubs: hubUrl ? [hubUrl] : [DIRECT_URL, PROXY_URL], notice }}>
+  // The hub's notices script: workers.dev does not resolve from Russia, so the proxy is tried when it fails to load;
+  // the other address goes to data-proxy for the script's own requests. Impressions are counted only once the person
+  // agreed to statistics (src/hub/studioHub.mjs keeps the choice).
   (() => {
-    const script = document.querySelector('script[data-app="bulka"]');
     let state = {};
     try {
       state = JSON.parse(localStorage.getItem('bulka-studio-hub') || '{}');
     } catch (e) {
       console.warn('[studio hub] the statistics choice could not be read:', e);
     }
-    if (state.acknowledged && state.telemetry) script.dataset.events = 'on';
+    const load = (i) => {
+      const script = document.createElement('script');
+      script.src = `${hubs[i]}/embed/notices.js`;
+      Object.assign(script.dataset, notice, { events: state.acknowledged && state.telemetry ? 'on' : 'off' });
+      if (hubs.length > 1) script.dataset.proxy = hubs[1 - i];
+      script.onerror = () => {
+        script.remove();
+        if (i + 1 < hubs.length) load(i + 1);
+        else console.warn(`[studio hub] the notices script did not load from ${hubs.join(' or ')}`);
+      };
+      document.head.appendChild(script);
+    };
+    load(0);
   })();
 </script>
 <link rel="icon" type="image/svg+xml" href={`${baseNoTrailing}/favicon.svg`} />

@@ -5,6 +5,7 @@ import { PatternLabel } from '@src/repl/components/panel/PatternsTab';
 import { getMetadata } from '@src/metadata_parser.js';
 import cx from '@src/cx.mjs';
 import { t } from '../../i18n/index.mjs';
+import { trackLink } from '@src/repl/util.mjs';
 
 // Icons
 function HeartIcon({ filled }) {
@@ -186,8 +187,7 @@ function TrackCard({ pattern, onRefresh }) {
 
   const handleShare = useCallback(async () => {
     if (!pattern.hash) return;
-    // Формируем ссылку напрямую на редактор (без /feed/)
-    const shareUrl = window.location.origin + '/?' + pattern.hash;
+    const shareUrl = trackLink(pattern.hash);
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);

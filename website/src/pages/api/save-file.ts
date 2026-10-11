@@ -15,16 +15,13 @@ export const POST: APIRoute = async ({ request }) => {
     const { filename, dataBase64, subfolder } = await request.json();
     if (!dataBase64) return json({ ok: false, error: 'нет данных' }, 400);
 
-    const safe = String(filename || `bulka_${Date.now()}.bin`)
-      .replace(/[<>:"/\\|?*]/g, '_')
-      .slice(0, 150);
+    const safe = safeName(String(filename || `bulka_${Date.now()}.bin`), 150);
+    if (!safe) return json({ ok: false, error: 'недопустимое имя файла' }, 400);
     const baseDir = recordingsDir();
     // Записи группируем в папку с названием трека: recordings/<трек>/файл.wav (по просьбе — так
     // несколько партий одного трека лежат вместе). subfolder санитайзим, пустой — прямо в recordings.
-    const safeSub = String(subfolder || '')
-      .replace(/[<>:"/\\|?*]/g, '_')
-      .slice(0, 100)
-      .trim();
+    const safeSub = safeName(String(subfolder || ''), 100);
+    if (String(subfolder || '').trim() && !safeSub) return json({ ok: false, error: 'недопустимое имя папки' }, 400);
     const dir = safeSub ? join(baseDir, safeSub) : baseDir;
     await mkdir(dir, { recursive: true });
     const path = await freePath(dir, safe);
@@ -64,6 +61,15 @@ async function freePath(dir: string, name: string): Promise<string> {
       throw e;
     }
   }
+}
+
+// One path segment inside recordings: no separators, and no "." or ".." that would leave the folder.
+function safeName(name: string, max: number): string {
+  const out = name
+    .replace(/[<>:"/\\|?*]/g, '_')
+    .slice(0, max)
+    .trim();
+  return /^\.*$/.test(out) ? '' : out;
 }
 
 function json(body: unknown, status = 200) {
