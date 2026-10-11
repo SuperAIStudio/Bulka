@@ -629,7 +629,7 @@
   {
     "id": "en-learn-desktop",
     "title": "Desktop App",
-    "content": "# The Bulka desktop app\n\nBulka ships as a **desktop app for Windows, Linux and macOS**: all of Bulka runs locally.\n[Download the latest version](https://github.com/timoncool/Bulka/releases/latest).\n\n- **Windows installer** `Bulka_x64-setup.exe` → a \"Bulka\" shortcut. Installs without admin rights and **updates\n  itself** from new releases.\n- **Windows portable** `Bulka-portable.zip` → unzip → `Bulka.exe`. Nothing is written to the system: delete the\n  folder and the app is gone.\n- **Linux** `Bulka_amd64.AppImage` (runs on any distribution, updates itself) or `Bulka_amd64.deb`.\n- **macOS** (Apple Silicon) `Bulka_aarch64.dmg`.\n\n## What's inside\n\nThe app starts a built-in server and opens a window: the full Bulka without a browser. Windows 10/11 x64 needs\nWebView2 (Windows 11 has it; otherwise the installer fetches it).\n\n## Local and private\n\n- On Windows, **keys and settings** live in the app folder (`webview-data`), not in the system. Everything is local.\n- Close the window and everything stops (no server left running in the background).\n- Recordings and WAV exports go to the `recordings` folder of the app, and the folder opens after saving.\n\n## Desktop-only features\n\n- **[Built-in MCP server](/en/learn/mcp)**: an external Claude Desktop / ChatGPT / Cursor drives Bulka.\n- **[Local models (LM Studio / Ollama)](/en/learn/local-models)**: the Bulka chat on your local model, no cloud.\n\n## Building from source\n\nRepository [timoncool/Bulka](https://github.com/timoncool/Bulka), folder `desktop/` (Tauri v2):\n`bash desktop/build.sh` → installer, `bash desktop/pack-portable.sh` → portable. Details are in `desktop/README.md`.",
+    "content": "# The Bulka desktop app\n\nBulka ships as a **desktop app for Windows, Linux and macOS**: all of Bulka runs locally.\n[Download the latest version](https://github.com/timoncool/Bulka/releases/latest).\n\n- **Windows installer** `Bulka_<version>_x64-setup.exe` → a \"Bulka\" shortcut. Installs without admin rights and\n  **updates itself** from new releases.\n- **Windows portable** `Bulka-portable.zip` → unzip → `Bulka.exe`. Nothing is written to the system: delete the\n  folder and the app is gone.\n- **Linux** `Bulka_<version>_amd64.AppImage` (runs on any distribution, updates itself) or `Bulka_<version>_amd64.deb`.\n- **macOS** (Apple Silicon, macOS 13.5 or newer) `Bulka_<version>_aarch64.dmg`. The app is not notarized by Apple: start it\n  once, then System Settings → Privacy & Security → \"Open Anyway\". If macOS says the app is damaged, run\n  `xattr -cr /Applications/Bulka.app` in Terminal.\n\n## What's inside\n\nThe app starts a built-in server and opens a window: the full Bulka without a browser. Windows 10/11 x64 needs\nWebView2 (Windows 11 has it; otherwise the installer fetches it).\n\n## Local and private\n\n- **Keys, settings and recordings** stay on your machine: on Windows in the app folder (`webview-data`,\n  `recordings`), on Linux in `~/.local/share/app.bulka.desktop`, on macOS in\n  `~/Library/Application Support/app.bulka.desktop`.\n- Close the window and everything stops (no server left running in the background).\n- Recordings and WAV exports go to the `recordings` folder, and the folder opens after saving.\n\n## Desktop-only features\n\n- **[Built-in MCP server](/en/learn/mcp)**: an external Claude Desktop / ChatGPT / Cursor drives Bulka.\n- **[Local models (LM Studio / Ollama)](/en/learn/local-models)**: the Bulka chat on your local model, no cloud.\n\n## Building from source\n\nRepository [timoncool/Bulka](https://github.com/timoncool/Bulka), folder `desktop/` (Tauri v2):\n`bash desktop/build.sh` builds the app for the current OS, `bash desktop/pack-portable.sh` the Windows portable,\n`desktop/build-linux-docker.sh` Linux in Docker. Details are in `desktop/README.md`.",
     "category": "learn",
     "keywords": [
       "desktop",
@@ -2869,14 +2869,15 @@
   },
   {
     "id": "learn-desktop",
-    "title": "Десктоп-версия (Windows)",
-    "content": "# Десктоп-версия Bulka (Windows)\n\nBulka есть как **портативное Windows-приложение** — вся Bulka работает локально, в одной папке.\n[Скачать последнюю версию](https://github.com/timoncool/Bulka/releases/latest).\n\n- **Установщик** `Bulka_x64-setup.exe` → ярлык «Bulka». Ставится без прав администратора и **сам обновляется**\n  с новых релизов.\n- **Портатив** `Bulka-portable.zip` → распакуй → `Bulka.exe`. Ничего не пишется в систему — удалил папку,\n  удалил приложение.\n\n## Что внутри\n\nПриложение поднимает встроенный сервер и открывает окно — полноценная Bulka без браузера. Требуется\nWindows 10/11 x64 (WebView2 в Win11 уже есть; иначе установщик докачает).\n\n## Локальность и приватность\n\n- **Ключи и настройки** хранятся в папке приложения (`webview-data`), а не в системе. Всё локально.\n- Закрыл окно — всё закрылось (сервер не висит фоном).\n- Запись треков и экспорт WAV сохраняются в папку приложения (`recordings`) и папка открывается после сохранения.\n\n## Что доступно только в десктопе\n\n- **[Встроенный MCP-сервер](/learn/mcp)** — внешний Claude Desktop / ChatGPT / Cursor управляют Bulka.\n- **[Локальные модели (LM Studio / Ollama)](/learn/local-models)** — чат Bulka на твоей локальной модели, без облака.\n\n## Сборка из исходников\n\nРепозиторий [timoncool/Bulka](https://github.com/timoncool/Bulka), папка `desktop/` (Tauri v2):\n`bash desktop/build.sh` → установщик, `bash desktop/pack-portable.sh` → портатив. Подробности — в `desktop/README.md`.",
+    "title": "Десктоп-версия",
+    "content": "# Десктоп-версия Bulka\n\nBulka есть как **приложение для Windows, Linux и macOS** — вся Bulka работает локально.\n[Скачать последнюю версию](https://github.com/timoncool/Bulka/releases/latest).\n\n- **Windows, установщик** `Bulka_<версия>_x64-setup.exe` → ярлык «Bulka». Ставится без прав администратора и\n  **сам обновляется** с новых релизов.\n- **Windows, портатив** `Bulka-portable.zip` → распакуй → `Bulka.exe`. Ничего не пишется в систему — удалил папку,\n  удалил приложение.\n- **Linux** `Bulka_<версия>_amd64.AppImage` (любой дистрибутив, сам обновляется) или `Bulka_<версия>_amd64.deb`.\n- **macOS** (Apple Silicon, macOS 13.5 и новее) `Bulka_<версия>_aarch64.dmg`. Приложение не заверено Apple: запусти\n  его один раз, затем «Системные настройки» → «Конфиденциальность и безопасность» → «Всё равно открыть». Если macOS\n  пишет, что приложение повреждено, выполни в Терминале `xattr -cr /Applications/Bulka.app`.\n\n## Что внутри\n\nПриложение поднимает встроенный сервер и открывает окно — полноценная Bulka без браузера. Windows 10/11 x64 нужен\nWebView2 (в Windows 11 он есть; иначе установщик докачает).\n\n## Локальность и приватность\n\n- **Ключи, настройки и записи** хранятся локально: на Windows — в папке приложения (`webview-data`, `recordings`),\n  на Linux — в `~/.local/share/app.bulka.desktop`, на macOS — в `~/Library/Application Support/app.bulka.desktop`.\n- Закрыл окно — всё закрылось (сервер не висит фоном).\n- Запись треков и экспорт WAV сохраняются в папку `recordings`, и папка открывается после сохранения.\n\n## Что доступно только в десктопе\n\n- **[Встроенный MCP-сервер](/learn/mcp)** — внешний Claude Desktop / ChatGPT / Cursor управляют Bulka.\n- **[Локальные модели (LM Studio / Ollama)](/learn/local-models)** — чат Bulka на твоей локальной модели, без облака.\n\n## Сборка из исходников\n\nРепозиторий [timoncool/Bulka](https://github.com/timoncool/Bulka), папка `desktop/` (Tauri v2):\n`bash desktop/build.sh` собирает приложение под текущую ОС, `bash desktop/pack-portable.sh` — портатив Windows,\n`desktop/build-linux-docker.sh` — Linux в Docker. Подробности — в `desktop/README.md`.",
     "category": "learn",
     "keywords": [
       "десктоп-версия",
-      "(windows)",
       "bulka",
       "windows",
+      "linux",
+      "macos",
       "https",
       "github",
       "timoncool",
@@ -2884,15 +2885,14 @@
       "latest",
       "setup",
       "portable",
+      "appimage",
+      "apple",
+      "silicon",
+      "xattr",
+      "applications",
       "webview",
       "data",
-      "recordings",
-      "learn",
-      "claude",
-      "desktop",
-      "chatgpt",
-      "cursor",
-      "studio"
+      "recordings"
     ],
     "path": "learn/desktop.mdx",
     "lang": "ru"

@@ -76,17 +76,17 @@ cp "$NODE_CACHE" "$STAGE/node/$NODE_BIN"
 chmod +x "$STAGE/node/$NODE_BIN"
 
 echo "[3/5] Production node_modules (плоский, hoisted — иначе node не резолвит транзитивные)"
-TMP="$(mktemp -d)"
+DEPLOY_DIR="$(mktemp -d)"
 DEPLOY_LOG="$DESK/src-tauri/staging/pnpm-deploy.log"
 if ! PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false \
-  pnpm --filter @bulka/website --config.node-linker=hoisted deploy --prod --legacy "$TMP" >"$DEPLOY_LOG" 2>&1; then
+  pnpm --filter @bulka/website --config.node-linker=hoisted deploy --prod --legacy "$DEPLOY_DIR" >"$DEPLOY_LOG" 2>&1; then
   echo "[ERROR] pnpm deploy упал, лог: $DEPLOY_LOG"
   tail -n 30 "$DEPLOY_LOG"
   exit 1
 fi
 rm -rf "$STAGE/node_modules"
-cp -rL "$TMP/node_modules" "$STAGE/node_modules"
-rm -rf "$TMP"
+cp -rL "$DEPLOY_DIR/node_modules" "$STAGE/node_modules"
+rm -rf "$DEPLOY_DIR"
 
 echo "[4/5] Удаление build-only пакетов (SSR-сервер их в рантайме не грузит)"
 cd "$STAGE/node_modules"

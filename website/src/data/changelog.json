@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "other",
+        "typeLabel": "Прочее",
+        "emoji": "📦",
+        "description": "Desktop for Windows, Linux and macOS",
+        "scope": null,
+        "author": "Nerual Dreming",
+        "hash": "dac19d8d0"
+      },
+      {
         "type": "feat",
         "typeLabel": "Новые возможности",
         "emoji": "✨",
