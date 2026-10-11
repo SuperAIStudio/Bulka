@@ -6,12 +6,11 @@
   "scripts": {
     "setup": "pnpm i",
     "changelog": "node scripts/generate-changelog.mjs",
-    "pretest": "npm run jsdoc-json",
     "prebuild": "npm run changelog",
     "prestart": "npm run jsdoc-json",
-    "test": "npm run pretest && vitest run --version",
+    "test": "vitest run",
     "test-ui": "npm run pretest && vitest --ui",
-    "test-coverage": "npm run pretest && vitest --coverage",
+    "test-coverage": "vitest run --coverage",
     "bench": "npm run pretest && vitest bench",
     "snapshot": "npm run pretest && vitest run -u --silent",
     "repl": "npm run prestart && cd website && npm run dev",
@@ -21,7 +20,7 @@
     "preview": "cd website && npm run preview",
     "osc": "cd packages/osc && npm run server",
     "jsdoc": "jsdoc packages/ -c jsdoc/jsdoc.config.json",
-    "jsdoc-json": "jsdoc packages/ --template ./node_modules/jsdoc-json --destination doc.json -c jsdoc/jsdoc.config.json",
+    "jsdoc-json": "jsdoc packages/ --template ./node_modules/jsdoc-json --destination doc.en.json -c jsdoc/jsdoc.config.json",
     "lint": "eslint . --quiet",
     "codeformat": "prettier --write .",
     "format-check": "prettier --check .",
@@ -29,7 +28,8 @@
     "check": "npm run format-check && npm run lint && npm run test",
     "sampler": "cd samples && node ../packages/sampler/sample-server.mjs",
     "iclc": "cd paper && pandoc --template=pandoc/iclc.html --citeproc  --number-sections iclc2023.md -o iclc2023.html && pandoc --template=pandoc/iclc.latex --citeproc --number-sections iclc2023.md -o iclc2023.pdf",
-    "prepare": "husky"
+    "prepare": "husky",
+    "doc-ru": "node scripts/doc-ru-sync.mjs"
   },
   "repository": {
     "type": "git",
