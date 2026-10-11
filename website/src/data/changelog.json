@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
+        "description": "prettier/eslint green (format 41 files, ignore build outputs and MDX that prettier's MDX1 parser corrupts); masterVolume NaN when unset; vite glob query raw",
+        "scope": null,
+        "author": "Nerual Dreming",
+        "hash": "f62b9d5ba"
+      },
+      {
         "type": "chore",
         "typeLabel": "Обслуживание",
         "emoji": "🔧",

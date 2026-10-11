@@ -11,7 +11,7 @@ export function JsDoc({ name, h = 3, hideDescription, punchcard, canvasHeight })
   const CustomHeading = `h${h}`;
   const description =
     item.description?.replaceAll(/\{@link ([a-zA-Z\.]+)?#?([a-zA-Z]*)\}/g, (_, a, b) => {
-      return `<a href="#${a.replaceAll('.', '').toLowerCase()}${b ? `-${b}` : ''}">${a}${b ? `#${b}` : ''}</a>`;
+      return `<code>${b || a}</code>`;
     }) || '';
   return (
     <>

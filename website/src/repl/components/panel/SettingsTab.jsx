@@ -1,4 +1,4 @@
-import { defaultSettings, settingsMap, useSettings } from '../../../settings.mjs';
+import { defaultSettings, settingsMap, storePrebakeScript, useSettings } from '../../../settings.mjs';
 import { themes } from '@strudel/codemirror';
 import { Textbox } from '../textbox/Textbox.jsx';
 import { isUdels } from '../../util.mjs';
@@ -8,7 +8,9 @@ import { AudioEngineTargetSelector } from './AudioEngineTargetSelector.jsx';
 import { confirmDialog } from '../../util.mjs';
 import { DEFAULT_MAX_POLYPHONY, setMaxPolyphony, setMultiChannelOrbits } from '@strudel/webaudio';
 import { ActionButton, SpecialActionButton } from '../button/action-button.jsx';
-import { ImportPrebakeScriptButton } from './ImportPrebakeScriptButton.jsx';
+import { exportScript, ImportPrebakeScriptButton } from './ImportPrebakeScriptButton.jsx';
+import { PrebakeCodeMirror } from '../../prebakeCodeMirror.mjs';
+import { useEffect, useRef } from 'react';
 import { McpPanel } from './McpPanel.jsx';
 
 function Checkbox({ label, value, onChange, disabled = false }) {
@@ -89,6 +91,33 @@ const fontFamilyOptions = {
 
 const RELOAD_MSG = 'Для применения этой настройки требуется перезагрузка страницы. ОК?';
 
+function PrebakeEditor() {
+  const { includePrebakeScriptInShare, prebakeScript } = useSettings();
+  const editorRef = useRef();
+  useEffect(() => () => editorRef.current?.cleanup(), []);
+  return (
+    <div className="flex flex-col gap-2">
+      <section
+        className="code-container border border-muted rounded-md max-h-64 overflow-auto"
+        ref={(el) => {
+          if (!el || editorRef.current) return;
+          editorRef.current = new PrebakeCodeMirror(prebakeScript, (code) => storePrebakeScript(code), el);
+        }}
+      ></section>
+      <div className="flex flex-wrap items-center gap-3">
+        <ActionButton label="сохранить (Ctrl+Enter)" onClick={() => editorRef.current?.savePrebake()} />
+        <ActionButton label="экспорт" onClick={() => exportScript(prebakeScript)} />
+        <ImportPrebakeScriptButton updateEditor={(code) => editorRef.current?.setCode(code)} />
+      </div>
+      <Checkbox
+        label="Включать prebake-скрипт в ссылку"
+        onChange={(cbEvent) => settingsMap.setKey('includePrebakeScriptInShare', cbEvent.target.checked)}
+        value={includePrebakeScriptInShare}
+      />
+    </div>
+  );
+}
+
 export function SettingsTab({ started }) {
   const {
     theme,
@@ -115,8 +144,8 @@ export function SettingsTab({ started }) {
     multiChannelOrbits,
     isTabIndentationEnabled,
     isMultiCursorEnabled,
+    isBlockBasedEvalEnabled,
     patternAutoStart,
-    includePrebakeScriptInShare,
   } = useSettings();
   const shouldAlwaysSync = isUdels();
   const canChangeAudioDevice = AudioContext.prototype.setSinkId != null;
@@ -210,19 +239,14 @@ export function SettingsTab({ started }) {
         </FormItem>
       </div>
       <FormItem label="Prebake-скрипт">
-        <ImportPrebakeScriptButton />
-        <Checkbox
-          label="Включать prebake-скрипт в ссылку"
-          onChange={(cbEvent) => settingsMap.setKey('includePrebakeScriptInShare', cbEvent.target.checked)}
-          value={includePrebakeScriptInShare}
-        />
+        <PrebakeEditor />
       </FormItem>
 
       <FormItem label="Клавиши">
         <ButtonGroup
           value={keybindings}
           onChange={(keybindings) => settingsMap.setKey('keybindings', keybindings)}
-          items={{ codemirror: 'Codemirror', vim: 'Vim', emacs: 'Emacs', vscode: 'VSCode' }}
+          items={{ codemirror: 'Codemirror', vim: 'Vim', emacs: 'Emacs', helix: 'Helix', vscode: 'VSCode' }}
         ></ButtonGroup>
       </FormItem>
       <FormItem label="Позиция панели">
@@ -289,6 +313,11 @@ export function SettingsTab({ started }) {
           label="Мульти-курсор (Cmd/Ctrl+Click)"
           onChange={(cbEvent) => settingsMap.setKey('isMultiCursorEnabled', cbEvent.target.checked)}
           value={isMultiCursorEnabled}
+        />
+        <Checkbox
+          label="Поблочное выполнение (экспериментально)"
+          onChange={(cbEvent) => settingsMap.setKey('isBlockBasedEvalEnabled', cbEvent.target.checked)}
+          value={isBlockBasedEvalEnabled}
         />
         <Checkbox
           label="Вспышка при выполнении"

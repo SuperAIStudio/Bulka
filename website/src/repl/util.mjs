@@ -129,42 +129,6 @@ export function confirmDialog(msg) {
   });
 }
 
-//RIP due to SPAM
-// let lastShared;
-// export async function shareCode(codeToShare) {
-//   // const codeToShare = activeCode || code;
-//   if (lastShared === codeToShare) {
-//     logger(`Link already generated!`, 'error');
-//     return;
-//   }
-
-//   confirmDialog(
-//     'Do you want your pattern to be public? If no, press cancel and you will get just a private link.',
-//   ).then(async (isPublic) => {
-//     const hash = nanoid(12);
-//     const shareUrl = window.location.origin + window.location.pathname + '?' + hash;
-//     const { error } = await supabase.from('code_v1').insert([{ code: codeToShare, hash, ['public']: isPublic }]);
-//     if (!error) {
-//       lastShared = codeToShare;
-//       // copy shareUrl to clipboard
-//       if (isTauri()) {
-//         await writeText(shareUrl);
-//       } else {
-//         await navigator.clipboard.writeText(shareUrl);
-//       }
-//       const message = `Link copied to clipboard: ${shareUrl}`;
-//       alert(message);
-//       // alert(message);
-//       logger(message, 'highlight');
-//     } else {
-//       console.log('error', error);
-//       const message = `Error: ${error.message}`;
-//       // alert(message);
-//       logger(message);
-//     }
-//   });
-// }
-
 let lastShared;
 let lastShareHash;
 
@@ -207,6 +171,13 @@ function isValidCode(code) {
 }
 
 // New shareCode that returns data for ShareDialog
+// Публичный адрес ссылки: в десктопе окно открыто на 127.0.0.1, а ссылка должна вести на сайт.
+function shareBase() {
+  const { hostname, origin, pathname } = window.location;
+  const isLocal = hostname === '127.0.0.1' || hostname === 'localhost';
+  return isLocal ? new URL(pathname, import.meta.env.SITE).href : origin + pathname;
+}
+
 export async function shareCode(codeToShare, isPublic = true) {
   try {
     // Validate code first
@@ -217,7 +188,7 @@ export async function shareCode(codeToShare, isPublic = true) {
 
     // Check if already shared this exact code (local cache)
     if (lastShared === codeToShare && lastShareHash) {
-      const shareUrl = window.location.origin + window.location.pathname + '?' + lastShareHash;
+      const shareUrl = shareBase() + '?' + lastShareHash;
       await copyToClipboard(shareUrl);
       logger('Ссылка скопирована!', 'highlight');
       return {
@@ -228,6 +199,7 @@ export async function shareCode(codeToShare, isPublic = true) {
       };
     }
 
+    let shortLinkError = 'неизвестная ошибка';
     // Try to create short URL via Supabase
     try {
       // Если есть originHash - обновляем существующую запись (перезапись трека)
@@ -238,7 +210,7 @@ export async function shareCode(codeToShare, isPublic = true) {
           .eq('hash', originHash);
 
         if (!updateError) {
-          const shareUrl = window.location.origin + window.location.pathname + '?' + originHash;
+          const shareUrl = shareBase() + '?' + originHash;
           lastShared = codeToShare;
           lastShareHash = originHash;
 
@@ -266,7 +238,7 @@ export async function shareCode(codeToShare, isPublic = true) {
 
       if (existing?.hash) {
         // Code already exists, return existing link
-        const shareUrl = window.location.origin + window.location.pathname + '?' + existing.hash;
+        const shareUrl = shareBase() + '?' + existing.hash;
         lastShared = codeToShare;
         lastShareHash = existing.hash;
 
@@ -291,7 +263,7 @@ export async function shareCode(codeToShare, isPublic = true) {
       ]);
 
       if (!error) {
-        const shareUrl = window.location.origin + window.location.pathname + '?' + hash;
+        const shareUrl = shareBase() + '?' + hash;
         lastShared = codeToShare;
         lastShareHash = hash;
         // Устанавливаем originHash для возможных будущих обновлений
@@ -306,14 +278,15 @@ export async function shareCode(codeToShare, isPublic = true) {
           isExisting: false,
         };
       }
-      console.warn('Supabase error, falling back to long URL:', error);
+      shortLinkError = error.message;
     } catch (e) {
-      console.warn('Short URL failed, using long URL:', e);
+      shortLinkError = e.message;
     }
+    logger(`Короткая ссылка не создалась (${shortLinkError}) — скопирована длинная, код внутри ссылки`, 'warning');
 
     // Fallback to long URL (base64 encoded code in hash)
     const longHash = '#' + code2hash(codeToShare);
-    const shareUrl = window.location.origin + window.location.pathname + longHash;
+    const shareUrl = shareBase() + longHash;
 
     await copyToClipboard(shareUrl);
     logger('Ссылка скопирована!', 'highlight');

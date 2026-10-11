@@ -32,8 +32,8 @@ const APP_VERSION = GIT_COMMIT;
 
 console.log(`📦 Building Bulka ${GIT_COMMIT}`);
 
-const site = `https://strudel.cc/`; // root url without a path
-const base = '/'; // base path of the strudel site
+const site = `https://bulka.app/`; // root url without a path
+const base = '/'; // base path of the site
 const baseNoTrailing = base.endsWith('/') ? base.slice(0, -1) : base;
 
 // this rehype plugin fixes relative links
@@ -45,11 +45,14 @@ const baseNoTrailing = base.endsWith('/') ? base.slice(0, -1) : base;
 //   /some/page -> /mybase/some/page
 function relativeURLFix() {
   return (tree, file) => {
-    const chunks = file.history[0].split('/src/pages/'); // file.history[0] is the file path
-    const path = chunks[chunks.length - 1].slice(0, -4); // only path inside src/pages, without .mdx
+    const filePath = file.history[0].replace(/\\/g, '/'); // file.history[0] is the file path
+    // mdx imported from packages/*/docs renders inside a page: its own #anchors stay relative
+    const isPage = filePath.includes('/src/pages/');
+    const path = filePath.split('/src/pages/').pop().slice(0, -4); // only path inside src/pages, without .mdx
     return rehypeUrls((url) => {
       let newHref = baseNoTrailing;
       if (url.href.startsWith('#')) {
+        if (!isPage) return;
         // special case: a relative anchor link to the current page
         newHref += `/${path}/${url.href}`;
       } else if (url.href.startsWith('/')) {

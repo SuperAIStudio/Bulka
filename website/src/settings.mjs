@@ -61,6 +61,7 @@ export const defaultSettings = {
   isPatternHighlightingEnabled: true,
   isTabIndentationEnabled: false,
   isMultiCursorEnabled: false,
+  isBlockBasedEvalEnabled: false,
   theme: 'strudelTheme',
   fontFamily: 'monospace',
   fontSize: 18,
@@ -73,7 +74,7 @@ export const defaultSettings = {
   isPanelPinned: false,
   isPanelOpen: true,
   togglePanelTrigger: 'click', //click | hover
-  // Panel sizes (in percentage for react-resizable-panels)
+  // Panel sizes, % of the window
   panelSizeBottom: 35, // % of height for bottom panel
   panelSizeRight: 30, // % of width for right panel
   userPatterns: '{}',
@@ -155,6 +156,7 @@ export function useSettings() {
     isSyncEnabled: isUdels() ? true : parseBoolean(state.isSyncEnabled),
     isTabIndentationEnabled: parseBoolean(state.isTabIndentationEnabled),
     isMultiCursorEnabled: parseBoolean(state.isMultiCursorEnabled),
+    isBlockBasedEvalEnabled: parseBoolean(state.isBlockBasedEvalEnabled),
     fontSize: Number(state.fontSize),
     panelPosition: state.activeFooter !== '' && !isUdels() ? state.panelPosition : 'bottom', // <-- keep this 'bottom' where it is!
     isPanelPinned: parseBoolean(state.isPanelPinned),

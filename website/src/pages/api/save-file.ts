@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, access } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { join } from 'node:path';
+import { extname, join } from 'node:path';
+import { recordingsDir } from '../../lib/appDir';
 
 export const prerender = false;
 
@@ -17,17 +18,16 @@ export const POST: APIRoute = async ({ request }) => {
     const safe = String(filename || `bulka_${Date.now()}.bin`)
       .replace(/[<>:"/\\|?*]/g, '_')
       .slice(0, 150);
-    // BULKA_APP_DIR = каталог рядом с exe (портатив/установка). Фолбэк — cwd сервера.
-    const baseDir = process.env.BULKA_APP_DIR || process.cwd();
+    const baseDir = recordingsDir();
     // Записи группируем в папку с названием трека: recordings/<трек>/файл.wav (по просьбе — так
     // несколько партий одного трека лежат вместе). subfolder санитайзим, пустой — прямо в recordings.
     const safeSub = String(subfolder || '')
       .replace(/[<>:"/\\|?*]/g, '_')
       .slice(0, 100)
       .trim();
-    const dir = safeSub ? join(baseDir, 'recordings', safeSub) : join(baseDir, 'recordings');
+    const dir = safeSub ? join(baseDir, safeSub) : baseDir;
     await mkdir(dir, { recursive: true });
-    const path = join(dir, safe);
+    const path = await freePath(dir, safe);
     await writeFile(path, Buffer.from(dataBase64, 'base64'));
 
     revealInFolder(path, dir);
@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-// Открыть проводник/файловый менеджер на сохранённом файле (Windows/mac/Linux). Тихо игнорируем ошибки.
+// Открыть проводник/файловый менеджер на сохранённом файле (Windows/mac/Linux).
 function revealInFolder(filePath: string, dir: string) {
   try {
     if (process.platform === 'win32') {
@@ -47,8 +47,23 @@ function revealInFolder(filePath: string, dir: string) {
     } else {
       spawn('xdg-open', [dir], { detached: true, stdio: 'ignore' }).unref();
     }
-  } catch {
-    /* не критично */
+  } catch (e) {
+    console.error('[save-file] не удалось открыть папку', dir, e);
+  }
+}
+
+// Несколько записей одного трека не затирают друг друга: «трек.wav», «трек (2).wav», …
+async function freePath(dir: string, name: string): Promise<string> {
+  const ext = extname(name);
+  const stem = name.slice(0, name.length - ext.length);
+  for (let n = 1; ; n++) {
+    const candidate = join(dir, n === 1 ? name : `${stem} (${n})${ext}`);
+    try {
+      await access(candidate);
+    } catch (e: any) {
+      if (e.code === 'ENOENT') return candidate;
+      throw e;
+    }
   }
 }
 

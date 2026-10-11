@@ -123,9 +123,9 @@ function UserPatterns({ context }) {
 
         <ActionButton
           label="удалить все"
-          onClick={() => {
-            const { data } = userPattern.clearAll();
-            updateCodeWindow(context, data);
+          onClick={async () => {
+            const cleared = await userPattern.clearAll();
+            if (cleared) updateCodeWindow(context, cleared.data);
           }}
         />
       </div>

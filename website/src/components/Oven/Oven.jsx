@@ -78,6 +78,7 @@ function PatternItem({ pattern }) {
           setLikeCount((prev) => (newLiked ? Math.max(0, prev - 1) : prev + 1));
         }
       } catch (err) {
+        console.error('[like]', err);
         setLiked(!newLiked);
         setLikeCount((prev) => (newLiked ? Math.max(0, prev - 1) : prev + 1));
       } finally {

@@ -174,6 +174,7 @@ function TrackCard({ pattern, onRefresh }) {
         setLikeCount((prev) => (newLiked ? Math.max(0, prev - 1) : prev + 1));
       }
     } catch (err) {
+      console.error('[like]', err);
       // Revert on error
       setLiked(!newLiked);
       setLikeCount((prev) => (newLiked ? Math.max(0, prev - 1) : prev + 1));

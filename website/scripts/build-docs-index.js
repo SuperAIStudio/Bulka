@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PAGES_DIR = path.join(__dirname, '../src/pages');
 const OUTPUT_FILE = path.join(__dirname, '../src/data/docs-index.json');
+const REFERENCE_FILE = path.join(__dirname, '../../doc.json');
 
 // Directories to exclude from indexing
 const EXCLUDE_DIRS = ['api', 'swatch', 'udels'];
@@ -135,9 +136,11 @@ function buildIndex() {
         path: relativePath,
       });
     } catch (err) {
-      console.error(`Error processing ${filePath}:`, err.message);
+      throw new Error(`docs index: ${filePath}: ${err.message}`);
     }
   }
+
+  index.push(...referenceEntries());
 
   // Ensure output directory exists
   const outputDir = path.dirname(OUTPUT_FILE);
@@ -148,6 +151,37 @@ function buildIndex() {
   // Write index
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(index, null, 2));
   console.log(`✅ Created ${OUTPUT_FILE} with ${index.length} documents`);
+}
+
+/**
+ * Справка функций (doc.json, русская) — чтобы поиск агента знал каждую функцию движка, а не только
+ * те, что описаны на страницах доков.
+ */
+function referenceEntries() {
+  const { docs } = JSON.parse(fs.readFileSync(REFERENCE_FILE, 'utf-8'));
+  const text = (html = '') =>
+    html
+      .replace(/<[^>]+>/g, '')
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .trim();
+  return docs
+    .filter((d) => d.name && d.description && !d.name.startsWith('_'))
+    .map((d) => {
+      const synonyms = d.synonyms || [];
+      const params = (d.params || []).map((p) => `- ${p.name}: ${text(p.description)}`).join('\n');
+      const examples = (d.examples || []).map((e) => '```\n' + e + '\n```').join('\n');
+      return {
+        id: `reference-${d.longname}`,
+        title: synonyms.length ? `${d.name} (${synonyms.join(', ')})` : d.name,
+        content: [text(d.description), params && `Параметры:\n${params}`, examples].filter(Boolean).join('\n\n'),
+        category: 'reference',
+        keywords: [d.name, ...synonyms].map((k) => k.toLowerCase()),
+        path: `reference#${d.name}`,
+      };
+    });
 }
 
 buildIndex();
