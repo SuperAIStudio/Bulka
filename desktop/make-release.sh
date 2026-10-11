@@ -11,6 +11,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Git Bash: node for Windows reads D:/... paths, not /d/...
+command -v cygpath >/dev/null && ROOT="$(cygpath -m "$ROOT")"
 DESK="$ROOT/desktop"
 NSIS_DIR="$DESK/src-tauri/target/release/bundle/nsis"
 LINUX_DIR="${BULKA_LINUX_DIR:-$DESK/dist-linux}"
