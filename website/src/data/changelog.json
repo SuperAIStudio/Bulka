@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "docs",
+        "typeLabel": "Документация",
+        "emoji": "📚",
+        "description": "translate upstream FAQ hap section and symbol cheatsheet, signals, samples headings; fix samples anchors and hardcoded bulka.app link; rebuild docs index",
+        "scope": "ru",
+        "author": "Nerual Dreming",
+        "hash": "39abc46ef"
+      },
+      {
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
