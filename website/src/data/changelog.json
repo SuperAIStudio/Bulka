@@ -13,6 +13,15 @@
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
+        "description": "review findings — local server answers only on its own name, MCP off the site, notices via the proxy, statistics race",
+        "scope": null,
+        "author": "Nerual Dreming",
+        "hash": "633253555"
+      },
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
         "description": "bot commits (star history chart) stay out of What's new, and the ones already in are removed",
         "scope": "changelog",
         "author": "Nerual Dreming",

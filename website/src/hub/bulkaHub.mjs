@@ -31,11 +31,11 @@ function browser() {
   return 'other';
 }
 
-/** The hub script counts notice impressions only while statistics are on. */
+/** The hub script counts notice impressions only while statistics are on. When it failed to load from every hub
+ * address (HeadCommon.astro has logged that) there is nothing to switch. */
 function noticeEvents(on) {
   const script = document.querySelector('script[data-app="bulka"]');
-  if (!script) throw new Error('studio hub: the notices script is missing');
-  script.dataset.events = on ? 'on' : 'off';
+  if (script) script.dataset.events = on ? 'on' : 'off';
 }
 
 /** The hub of this page, or null where statistics are not wired (local dev without PUBLIC_STUDIO_HUB_URL). */

@@ -30,16 +30,19 @@ const notice = { app: 'bulka', lang, version: build.version, ...(hubTest ? { tes
   // the other address goes to data-proxy for the script's own requests. Impressions are counted only once the person
   // agreed to statistics (src/hub/studioHub.mjs keeps the choice).
   (() => {
-    let state = {};
-    try {
-      state = JSON.parse(localStorage.getItem('bulka-studio-hub') || '{}');
-    } catch (e) {
-      console.warn('[studio hub] the statistics choice could not be read:', e);
-    }
+    const eventsOn = () => {
+      try {
+        const state = JSON.parse(localStorage.getItem('bulka-studio-hub') || '{}');
+        return state.acknowledged && state.telemetry;
+      } catch (e) {
+        console.warn('[studio hub] the statistics choice could not be read:', e);
+        return false;
+      }
+    };
     const load = (i) => {
       const script = document.createElement('script');
       script.src = `${hubs[i]}/embed/notices.js`;
-      Object.assign(script.dataset, notice, { events: state.acknowledged && state.telemetry ? 'on' : 'off' });
+      Object.assign(script.dataset, notice, { events: eventsOn() ? 'on' : 'off' });
       if (hubs.length > 1) script.dataset.proxy = hubs[1 - i];
       script.onerror = () => {
         script.remove();
