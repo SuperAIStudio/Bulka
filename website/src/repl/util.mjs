@@ -9,6 +9,7 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { $featuredPatterns /* , loadDBPatterns */ } from '@src/user_pattern_utils.mjs';
 import { nanoid } from 'nanoid';
 import { t } from '../i18n/index.mjs';
+import { href } from '../i18n/lang.mjs';
 import { recordDone, recordFailed } from '../hub/bulkaHub.mjs';
 
 // Create a single supabase client for interacting with your database
@@ -174,11 +175,16 @@ function isValidCode(code) {
 
 // New shareCode that returns data for ShareDialog
 // Публичный адрес ссылки: в десктопе окно открыто на 127.0.0.1, а ссылка должна вести на сайт.
-function shareBase() {
-  const { hostname, origin, pathname } = window.location;
+function siteUrl(path) {
+  const { hostname, origin } = window.location;
   const isLocal = hostname === '127.0.0.1' || hostname === 'localhost';
-  return isLocal ? new URL(pathname, import.meta.env.SITE).href : origin + pathname;
+  return isLocal ? new URL(path, import.meta.env.SITE).href : origin + path;
 }
+
+const shareBase = () => siteUrl(window.location.pathname);
+
+/** Ссылка на трек в редакторе на языке страницы — для ленты и других мест вне редактора. */
+export const trackLink = (hash) => siteUrl(href('/')) + '?' + hash;
 
 export async function shareCode(codeToShare, isPublic = true) {
   const result = await createShareLink(codeToShare, isPublic);

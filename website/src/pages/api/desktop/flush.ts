@@ -7,12 +7,7 @@ export const prerender = false;
 let flushed = false;
 const waiters = new Set<() => void>();
 
-const desktopOnly = () =>
-  process.env.BULKA_DESKTOP === '1' ? null : new Response('only in the desktop app', { status: 404 });
-
 export const GET: APIRoute = async ({ url }) => {
-  const refused = desktopOnly();
-  if (refused) return refused;
   const waitMs = Math.min(Number(url.searchParams.get('wait')) || 8000, 15000);
   const done = await new Promise<boolean>((resolve) => {
     if (flushed) return resolve(true);
@@ -30,8 +25,6 @@ export const GET: APIRoute = async ({ url }) => {
 };
 
 export const POST: APIRoute = async () => {
-  const refused = desktopOnly();
-  if (refused) return refused;
   flushed = true;
   for (const release of waiters) release();
   waiters.clear();

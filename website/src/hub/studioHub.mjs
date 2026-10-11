@@ -162,6 +162,9 @@ export class StudioHub {
     for (const [dayKey, day] of Object.entries(this.state.days)) {
       if (!day.dirty) continue;
       const report = this.reportFor(dayKey);
+      // cleared before sending: something counted while the request is out marks the day again
+      day.dirty = false;
+      this.save();
       let settled = false;
       for (const url of this.orderedUrls()) {
         try {
@@ -187,10 +190,8 @@ export class StudioHub {
           console.warn(`[studio hub] ${url}: the report did not leave: ${e.message}`);
         }
       }
-      if (settled) {
-        day.dirty = false;
-        this.save();
-      }
+      if (!settled) day.dirty = true;
+      this.save();
     }
   }
 
