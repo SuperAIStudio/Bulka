@@ -29,6 +29,7 @@ import { getMetadata } from '../metadata_parser.js';
 import { shareCode, supabase } from './util.mjs';
 import { PANEL_TABS } from '../lib/appToolSchemas.mjs';
 import { AUDIO_LOCKED_MESSAGE, isAudioUnlocked } from './audioUnlock.mjs';
+import { href } from '../i18n/lang.mjs';
 
 export { APP_TOOL_NAMES } from '../lib/appToolSchemas.mjs';
 
@@ -169,7 +170,7 @@ export async function execAppTool(ctx, name, args = {}) {
       return `Громкость ${Math.round(v * 100)}%.`;
     }
     case 'newTrack':
-      afterReply(() => (window.location.href = '/?new'));
+      afterReply(() => (window.location.href = href('/?new')));
       return 'Окно открывает новый трек и перезагружается; через пару секунд оно снова на связи.';
     case 'shareCode': {
       const code = editor.code || '';

@@ -37,11 +37,13 @@ const COMMIT_TYPES = {
 // Коммиты, которые нужно пропустить
 const SKIP_PATTERNS = [/^Merge pull request/, /^Merge branch/, /^Revert "/, /^Reapply "/];
 
+const isBot = (author) => /\[bot\]$/.test(author ?? '');
+
 function parseCommit(line) {
   const [date, message, author, hash] = line.split('|');
 
-  // Пропускаем merge коммиты и реверты
-  if (SKIP_PATTERNS.some((pattern) => pattern.test(message))) {
+  // Пропускаем merge коммиты, реверты и коммиты ботов (график звёзд)
+  if (SKIP_PATTERNS.some((pattern) => pattern.test(message)) || isBot(author)) {
     return null;
   }
 
@@ -176,7 +178,8 @@ function mergeChangelogs(existing, newChanges) {
 
   // Сначала добавляем существующие
   for (const day of existing) {
-    byDate[day.date] = { ...day, changes: [...day.changes] };
+    const changes = day.changes.filter((c) => !isBot(c.author));
+    if (changes.length > 0 || day.date === '_DO_NOT_EDIT') byDate[day.date] = { ...day, changes };
   }
 
   // Добавляем только новые коммиты (без дубликатов)

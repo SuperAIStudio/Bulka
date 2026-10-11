@@ -6,6 +6,30 @@
     "changes": []
   },
   {
+    "date": "2026-10-12",
+    "dateFormatted": "12 октября 2026",
+    "changes": [
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
+        "description": "newTrack keeps the page language (the English page went to the Russian root)",
+        "scope": "mcp",
+        "author": "Nerual Dreming",
+        "hash": "efc865cce"
+      },
+      {
+        "type": "ci",
+        "typeLabel": "Прочее",
+        "emoji": "📦",
+        "description": "the macOS build also runs on pull requests that touch the desktop app",
+        "scope": "desktop",
+        "author": "Nerual Dreming",
+        "hash": "a27c74b1d"
+      }
+    ]
+  },
+  {
     "date": "2026-10-11",
     "dateFormatted": "11 октября 2026",
     "changes": [
@@ -161,6 +185,21 @@
         "scope": null,
         "author": "Nerual Dreming",
         "hash": "7f730f04f"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-24",
+    "dateFormatted": "24 сентября 2026",
+    "changes": [
+      {
+        "type": "other",
+        "typeLabel": "Прочее",
+        "emoji": "📦",
+        "description": "Star history redraws on every new star",
+        "scope": null,
+        "author": "Ilya (Nerual Dreming) Timonin",
+        "hash": "2ca703e46"
       }
     ]
   },
@@ -506,105 +545,6 @@
         "scope": null,
         "author": "Nerual Dreming",
         "hash": "33981cdc2"
-      },
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "123ee4c48"
-      }
-    ]
-  },
-  {
-    "date": "2026-08-24",
-    "dateFormatted": "24 августа 2026",
-    "changes": [
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "413885e99"
-      }
-    ]
-  },
-  {
-    "date": "2026-08-17",
-    "dateFormatted": "17 августа 2026",
-    "changes": [
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "fcbce433a"
-      }
-    ]
-  },
-  {
-    "date": "2026-08-10",
-    "dateFormatted": "10 августа 2026",
-    "changes": [
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "7145cc3b3"
-      }
-    ]
-  },
-  {
-    "date": "2026-08-03",
-    "dateFormatted": "3 августа 2026",
-    "changes": [
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "b22399539"
-      }
-    ]
-  },
-  {
-    "date": "2026-07-27",
-    "dateFormatted": "27 июля 2026",
-    "changes": [
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "7483925f6"
-      }
-    ]
-  },
-  {
-    "date": "2026-07-13",
-    "dateFormatted": "13 июля 2026",
-    "changes": [
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "update star history chart",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "e1828cd37"
       }
     ]
   },
@@ -1469,15 +1409,6 @@
         "scope": null,
         "author": "Claude",
         "hash": "68423e41"
-      },
-      {
-        "type": "chore",
-        "typeLabel": "Обслуживание",
-        "emoji": "🔧",
-        "description": "обновить changelog [skip ci]",
-        "scope": null,
-        "author": "github-actions[bot]",
-        "hash": "3fd8aec3"
       },
       {
         "type": "fix",
