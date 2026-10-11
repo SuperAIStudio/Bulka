@@ -7,6 +7,8 @@
 // на сервере (api/chat.ts). Здесь — только то, что требует окна Bulka.
 
 import { soundMap } from '@strudel/webaudio';
+import { isAudioUnlocked } from './audioUnlock.mjs';
+import { selectText } from './editorSelection.mjs';
 import { $strudel_log_history } from './components/useLogger.jsx';
 import { beginRecording, endRecording } from './recordingState.mjs';
 
@@ -114,7 +116,16 @@ function formatConsole() {
  * @param name канонический tool name (readCode/setFullCode/...)
  * @param args аргументы; для setFullCode можно передать modelTag='provider/model'
  */
-export function execClientTool(editor, name, args = {}) {
+async function evaluateChecked(editor) {
+  if (!isAudioUnlocked()) {
+    return 'Звук ещё не включён: Bulka ждёт первого клика в окне (браузер не даёт звуку стартовать без действия пользователя). Попроси пользователя щёлкнуть в окне Bulka и повтори.';
+  }
+  await editor.evaluate();
+  const err = editor.repl?.state?.evalError;
+  return err ? `Ошибка в коде: ${err.message || String(err)}` : null;
+}
+
+export async function execClientTool(editor, name, args = {}) {
   if (!editor) throw new Error('Редактор Bulka ещё не готов');
   switch (name) {
     case 'readCode': {
@@ -139,14 +150,17 @@ export function execClientTool(editor, name, args = {}) {
       editor.setCode(cur + (cur.endsWith('\n') ? '' : '\n') + String(args.code ?? ''));
       return { ok: true, message: '✓ Код добавлен', data: 'Код дописан.' };
     }
-    case 'playMusic':
-      editor.evaluate();
-      return { ok: true, message: '▶ Воспроизведение запущено', data: 'Воспроизведение запущено.' };
+    case 'playMusic': {
+      const error = await evaluateChecked(editor);
+      return error
+        ? { ok: false, message: '⚠ Ошибка в коде', data: error }
+        : { ok: true, message: '▶ Воспроизведение запущено', data: 'Воспроизведение запущено.' };
+    }
     case 'stopMusic':
       editor.stop();
       return { ok: true, message: '⏹ Воспроизведение остановлено', data: 'Остановлено.' };
     case 'highlightCode': {
-      const found = editor.selectText?.(args.search);
+      const found = selectText(editor, args.search);
       return found
         ? { ok: true, message: '🔍 Код выделен', data: 'Код выделен.' }
         : { ok: false, message: '⚠ Фрагмент не найден', data: 'Фрагмент не найден.' };
@@ -173,12 +187,16 @@ export function execClientTool(editor, name, args = {}) {
       return { ok: true, message: '⏹ Запись сохранена', data: 'Запись остановлена и сохранена в WAV.' };
     }
     case 'recordSeconds': {
-      const sec = Math.max(1, Math.min(3600, Number(args.seconds) || 8));
-      editor.evaluate(); // убедиться, что играет
+      const sec = Number(args.seconds);
+      if (!Number.isFinite(sec) || sec < 1 || sec > 3600) {
+        return { ok: false, message: '⚠ Неверная длительность', data: 'seconds — число от 1 до 3600.' };
+      }
+      const error = await evaluateChecked(editor);
+      if (error) return { ok: false, message: '⚠ Ошибка в коде', data: error };
       const fname = titleFilename(editor.code);
       beginRecording();
       setTimeout(() => endRecording(fname), sec * 1000);
-      return { ok: true, message: `🔴 Запись ${sec}с`, data: `Записываю ${sec} секунд; WAV сохранится автоматически.` };
+      return { ok: true, message: `🔴 Запись ${sec}с`, data: `Записываю ${sec} с; WAV сохранится автоматически.` };
     }
     default:
       throw new Error(`Неизвестный клиентский инструмент: ${name}`);

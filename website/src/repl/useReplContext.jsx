@@ -5,6 +5,7 @@ This program is free software: you can redistribute it and/or modify it under th
 */
 
 import { code2hash, getPerformanceTimeSeconds, logger, silence } from '@strudel/core';
+import { markAudioUnlocked } from './audioUnlock.mjs';
 import { getDrawContext } from '@strudel/draw';
 import { evaluate, transpiler } from '@strudel/transpiler';
 import {
@@ -46,7 +47,7 @@ if (typeof window !== 'undefined') {
     maxPolyphony,
     audioDeviceName,
     multiChannelOrbits: parseBoolean(multiChannelOrbits),
-  });
+  }).then(markAudioUnlocked);
   modulesLoading = loadModules();
   presets = prebake();
   drawContext = getDrawContext();
@@ -71,7 +72,9 @@ export function useReplContext() {
   const init = useCallback(() => {
     // Десктоп (Tauri): чиним blob-«скачивания» (запись/экспорт) — сохраняем через Node-сервер.
     // На вебе (bulka.app) — no-op. Импорт динамический, чтобы не тянуть в SSR.
-    import('./desktopBridge.mjs').then((m) => m.installDesktopDownloadBridge()).catch(() => {});
+    import('./desktopBridge.mjs')
+      .then((m) => m.installDesktopDownloadBridge())
+      .catch((e) => console.error('[desktop-bridge]', e));
     const drawTime = [-2, 2];
     const drawContext = getDrawContext();
     const editor = new StrudelMirror({
@@ -289,14 +292,17 @@ stack(
     // Десктоп: MCP-мост — внешний Claude Desktop / ChatGPT управляют Bulka через наш /mcp.
     // Авто-подъём вместе с приложением (ресурсов почти не ест); на вебе — no-op.
     import('./mcpBridge.mjs')
-      .then((m) => m.installMcpBridge(() => editorRef.current, { autoStart: true }))
-      .catch(() => {});
+      .then((m) =>
+        m.installMcpBridge(() => editorRef.current, { autoStart: true, getActions: () => actionsRef.current }),
+      )
+      .catch((e) => console.error('[mcp-bridge]', e));
   }, []);
 
   const [replState, setReplState] = useState({});
   const { started, isDirty, error, activeCode, pending } = replState;
   const editorRef = useRef();
   const containerRef = useRef();
+  const actionsRef = useRef({});
 
   // Автосохранение текущего кода. latestCode обновлялся только на afterEval (запуск), поэтому
   // код, поставленный агентом/руками и НЕ запущенный, терялся при обновлении страницы (undo тоже
@@ -409,6 +415,7 @@ stack(
     }
     shareCode(code);
   };
+  actionsRef.current = { started, handleUpdate, handleExport };
   const context = {
     started,
     pending,

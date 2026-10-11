@@ -13,6 +13,15 @@
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
+        "description": "site URL was strudel.cc (canonical, og, RSS); package-doc anchors leaked disk paths; Russian headings; likes/publicity/clearAll/pagination errors surfaced; share link from desktop points to bulka.app; recordings never overwrite; Helix keys, block eval, prebake editor from upstream; agent search covers function reference",
+        "scope": null,
+        "author": "Nerual Dreming",
+        "hash": "f56d0906d"
+      },
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
         "description": "prettier/eslint green (format 41 files, ignore build outputs and MDX that prettier's MDX1 parser corrupts); masterVolume NaN when unset; vite glob query raw",
         "scope": null,
         "author": "Nerual Dreming",

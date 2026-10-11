@@ -11,6 +11,7 @@ import { useSettings } from '../settings.mjs';
 import { soundMap } from '@strudel/webaudio';
 import { $strudel_log_history } from './components/useLogger.jsx';
 import { execClientTool } from './agentToolsClient.mjs';
+import { getSelectedCode } from './editorSelection.mjs';
 
 // Бесплатный AI БЕЗ авторизации/ключа: OVHcloud AI Endpoints (OpenAI-совместимый,
 // открытый CORS, стриминг). Проверено из браузера — gpt-oss отвечает и стримит.
@@ -461,7 +462,7 @@ export function useChatContext(replContext) {
         // Get current code from editor
         const editor = replContext?.editorRef?.current;
         const currentCode = editor?.code || '';
-        const selectedCode = editor?.getSelection?.() || null;
+        const selectedCode = getSelectedCode(editor);
 
         // Prepare messages for API
         const apiMessages = [...messages, userMessage].map((m) => ({
@@ -726,7 +727,7 @@ export function useChatContext(replContext) {
             try {
               const injectArgs =
                 name === 'setFullCode' ? { ...(args || {}), modelTag: `${aiProvider}/${aiModel}` } : args || {};
-              const res = execClientTool(editor, name, injectArgs);
+              const res = await execClientTool(editor, name, injectArgs);
               setLastAction(res.message);
               actionsExecuted.push(res.message);
               if (name === 'getAvailablePacks') message.packResult = res.data;
