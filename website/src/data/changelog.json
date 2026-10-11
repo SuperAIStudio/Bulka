@@ -13,6 +13,15 @@
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
+        "description": "WAV export in WebKit, MCP calls during window reconnects, exit without the 8 s wait",
+        "scope": "desktop",
+        "author": "Nerual Dreming",
+        "hash": "da53044c1"
+      },
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
         "description": "no trailing whitespace in the English pages from upstream and the xen page",
         "scope": "docs",
         "author": "Nerual Dreming",

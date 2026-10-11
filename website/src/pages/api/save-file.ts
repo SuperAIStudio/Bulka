@@ -37,19 +37,18 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-// Открыть проводник/файловый менеджер на сохранённом файле (Windows/mac/Linux).
+// Открыть проводник/файловый менеджер на сохранённом файле (Windows/mac/Linux). Файл уже сохранён, поэтому
+// неудача только пишется в лог; ошибку запуска (нет xdg-open) spawn отдаёт событием, без обработчика она роняет сервер.
 function revealInFolder(filePath: string, dir: string) {
-  try {
-    if (process.platform === 'win32') {
-      spawn('explorer.exe', ['/select,', filePath], { detached: true, stdio: 'ignore' }).unref();
-    } else if (process.platform === 'darwin') {
-      spawn('open', ['-R', filePath], { detached: true, stdio: 'ignore' }).unref();
-    } else {
-      spawn('xdg-open', [dir], { detached: true, stdio: 'ignore' }).unref();
-    }
-  } catch (e) {
-    console.error('[save-file] не удалось открыть папку', dir, e);
-  }
+  const [cmd, args] =
+    process.platform === 'win32'
+      ? ['explorer.exe', ['/select,', filePath]]
+      : process.platform === 'darwin'
+        ? ['open', ['-R', filePath]]
+        : ['xdg-open', [dir]];
+  const child = spawn(cmd, args, { detached: true, stdio: 'ignore' });
+  child.on('error', (e) => console.error(`[save-file] ${cmd} не открыл папку ${dir}:`, e.message));
+  child.unref();
 }
 
 // Несколько записей одного трека не затирают друг друга: «трек.wav», «трек (2).wav», …
