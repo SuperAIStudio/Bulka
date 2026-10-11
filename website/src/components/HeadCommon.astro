@@ -1,6 +1,7 @@
 ---
 // @ts-ignore
 import { pwaInfo } from 'virtual:pwa-info';
+import { langFromPath, t } from '../i18n/index.mjs';
 import '../styles/index.css';
 
 const { BASE_URL } = import.meta.env;
@@ -22,10 +23,7 @@ const baseNoTrailing = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL
 <!-- Iconify for noto:bread icon -->
 <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 
-<meta
-  name="description"
-  content="Bulka — платформа для лайв-кодинга музыки в браузере."
-/>
+<meta name="description" content={t('meta.description', undefined, langFromPath(Astro.url.pathname))} />
 <link rel="icon" href={`${baseNoTrailing}/favicon.svg`} />
 <link rel="apple-touch-icon" href={`${baseNoTrailing}/icons/apple-icon-180.png`} sizes="180x180" />
 <meta name="theme-color" content="#222222" />

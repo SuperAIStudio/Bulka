@@ -22,6 +22,7 @@ import {
   getApiKeyForProvider,
 } from '../../../settings.mjs';
 import { getRandomSuggestions } from '../../data/suggestions.js';
+import { t } from '../../../i18n/index.mjs';
 
 // Common input styles matching SettingsTab
 const inputClass =
@@ -37,9 +38,9 @@ const PROVIDER_LABELS = {
   gemini: 'Gemini',
   zai: 'Z.AI',
   openrouter: 'OpenRouter',
-  free: 'Бесплатно (OVHcloud)',
-  mcp: 'Внешний агент (MCP)',
-  local: 'Локально',
+  free: t('chat.provider.free'),
+  mcp: t('chat.provider.mcp'),
+  local: t('chat.provider.local'),
 };
 
 // Empty defaults - all models are fetched dynamically from provider APIs
@@ -127,8 +128,8 @@ const FREE_AI_NON_CHAT = /embedding|bge-|whisper|nvr-tts|stable-diffusion|guard/
 
 // Человекочитаемые ярлыки ключевых моделей.
 const FREE_AI_LABELS = {
-  'gpt-oss-20b': 'GPT-OSS 20B (быстрая, по умолчанию)',
-  'gpt-oss-120b': 'GPT-OSS 120B (умнее, медленнее)',
+  'gpt-oss-20b': t('chat.model.oss20'),
+  'gpt-oss-120b': t('chat.model.oss120'),
   'Meta-Llama-3_3-70B-Instruct': 'Llama 3.3 70B',
   'Qwen3-32B': 'Qwen3 32B',
   'Qwen3.6-27B': 'Qwen3.6 27B',
@@ -211,7 +212,7 @@ function OpenRouterModelSettings({ modelInfo }) {
   if (
     !(supportsTemp || supportsTopP || supportsMaxTokens || supportsEffort || supportsReasoningBudget || reasoningFixed)
   ) {
-    return <div className="text-xs opacity-60 p-2">У этой модели нет настраиваемых параметров.</div>;
+    return <div className="text-xs opacity-60 p-2">{t('chat.params.none')}</div>;
   }
 
   // Значения: сохранённое пользователем → опубликованный дефолт модели → общепринятое.
@@ -236,18 +237,23 @@ function OpenRouterModelSettings({ modelInfo }) {
   return (
     <div className="grid gap-2 p-2 rounded-md border border-foreground/20">
       <div className="text-xs opacity-70">
-        Параметры модели {hasPublishedDefaults ? '(дефолты — с OpenRouter)' : '(пустое = дефолт провайдера)'}
+        {t('chat.params.title')}{' '}
+        {hasPublishedDefaults ? t('chat.params.openrouterDefaults') : t('chat.params.providerDefaults')}
       </div>
 
       {supportsEffort && (
         <label className="grid gap-1 text-xs">
-          Уровень рассуждений (reasoning){reasoning?.mandatory ? ' · нельзя выключить' : ''}
+          {t('chat.params.reasoning')}
+          {reasoning?.mandatory ? t('chat.params.reasoningMandatory') : ''}
           <select
             className={cx(selectClass, 'text-sm py-1')}
             value={reasoningEffort}
             onChange={(e) => update({ reasoning_effort: e.target.value || undefined })}
           >
-            <option value="">по умолчанию{reasoning?.default_effort ? ` (${reasoning.default_effort})` : ''}</option>
+            <option value="">
+              {t('chat.params.default')}
+              {reasoning?.default_effort ? ` (${reasoning.default_effort})` : ''}
+            </option>
             {efforts.map((e) => (
               <option key={e} value={e}>
                 {e}
@@ -259,14 +265,17 @@ function OpenRouterModelSettings({ modelInfo }) {
 
       {supportsReasoningBudget && (
         <label className="grid gap-1 text-xs">
-          <span>Бюджет токенов на размышление{maxLimit ? ` (до ${maxLimit})` : ''}</span>
+          <span>
+            {t('chat.params.thinkingBudget')}
+            {maxLimit ? t('chat.params.upTo', { n: maxLimit }) : ''}
+          </span>
           <input
             type="number"
             min="1"
             max={maxLimit || undefined}
             className={cx(inputClass, 'text-sm py-1')}
             value={reasoningBudget}
-            placeholder="по умолчанию"
+            placeholder={t('chat.params.default')}
             onChange={(e) => update({ reasoning_max_tokens: e.target.value ? parseInt(e.target.value) : undefined })}
           />
         </label>
@@ -274,16 +283,17 @@ function OpenRouterModelSettings({ modelInfo }) {
 
       {reasoningFixed && (
         <div className="text-[11px] opacity-60">
-          Рассуждения включены{reasoning?.mandatory ? ' (обязательны, не отключаются)' : ''}; уровень у этой модели не
-          настраивается.
+          {t('chat.params.reasoningFixed', {
+            mandatory: reasoning?.mandatory ? t('chat.params.reasoningFixedMandatory') : '',
+          })}
         </div>
       )}
 
       {supportsTemp && (
         <label className="grid gap-1 text-xs">
           <span>
-            Температура: {Number(temp).toFixed(2)}
-            {saved.temperature == null ? ' (дефолт)' : ''}
+            {t('chat.params.temperature')} {Number(temp).toFixed(2)}
+            {saved.temperature == null ? t('chat.params.isDefault') : ''}
           </span>
           <input
             type="range"
@@ -300,7 +310,7 @@ function OpenRouterModelSettings({ modelInfo }) {
         <label className="grid gap-1 text-xs">
           <span>
             top_p: {Number(topP).toFixed(2)}
-            {saved.top_p == null ? ' (дефолт)' : ''}
+            {saved.top_p == null ? t('chat.params.isDefault') : ''}
           </span>
           <input
             type="range"
@@ -315,14 +325,17 @@ function OpenRouterModelSettings({ modelInfo }) {
 
       {supportsMaxTokens && (
         <label className="grid gap-1 text-xs">
-          <span>Макс. токенов ответа{maxLimit ? ` (лимит ${maxLimit})` : ''}</span>
+          <span>
+            {t('chat.params.maxTokens')}
+            {maxLimit ? t('chat.params.limit', { n: maxLimit }) : ''}
+          </span>
           <input
             type="number"
             min="1"
             max={maxLimit || undefined}
             className={cx(inputClass, 'text-sm py-1')}
             value={maxTokens}
-            placeholder="по умолчанию"
+            placeholder={t('chat.params.default')}
             onChange={(e) => update({ max_tokens: e.target.value ? parseInt(e.target.value) : undefined })}
           />
         </label>
@@ -333,7 +346,7 @@ function OpenRouterModelSettings({ modelInfo }) {
         className="text-xs opacity-60 hover:opacity-100 underline justify-self-start"
         onClick={reset}
       >
-        Сбросить к дефолтам
+        {t('chat.params.reset')}
       </button>
     </div>
   );
@@ -577,11 +590,11 @@ function SettingsPanel({ onClose, isBottomPanel }) {
 
   return (
     <div className="p-3 text-foreground overflow-y-auto overflow-x-hidden space-y-3">
-      <h3 className="text-base font-medium">Настройки AI</h3>
+      <h3 className="text-base font-medium">{t('chat.settings.title')}</h3>
 
       {/* Provider selection */}
       <div className="grid gap-1">
-        <label className="text-xs font-medium">Провайдер</label>
+        <label className="text-xs font-medium">{t('chat.settings.provider')}</label>
         <select
           value={provider}
           onChange={(e) => {
@@ -608,9 +621,9 @@ function SettingsPanel({ onClose, isBottomPanel }) {
           }}
           className={cx(selectClass, 'text-sm py-1.5')}
         >
-          <option value="free">Бесплатно (OVHcloud) ✓</option>
-          <option value="local">Локально (LM Studio / Ollama)</option>
-          <option value="mcp">Внешний агент (MCP)</option>
+          <option value="free">{t('chat.settings.freeOption')}</option>
+          <option value="local">{t('chat.settings.localOption')}</option>
+          <option value="mcp">{t('chat.settings.mcpOption')}</option>
           <option value="openai">OpenAI {openaiKey ? '✓' : ''}</option>
           <option value="anthropic">Anthropic {anthropicKey ? '✓' : ''}</option>
           <option value="gemini">Gemini {geminiKey ? '✓' : ''}</option>
@@ -622,12 +635,9 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       {/* Локальная модель (LM Studio / Ollama) — адрес сервера + опц. ключ */}
       {isLocal && (
         <div className="grid gap-2 p-2 rounded-md border border-foreground/20">
-          <p className="text-xs opacity-70">
-            Локальный OpenAI-совместимый сервер. Запусти LM Studio (Local Server) или Ollama и укажи адрес. Запрос идёт
-            через приложение (работает в десктоп-версии; ключ обычно не нужен).
-          </p>
+          <p className="text-xs opacity-70">{t('chat.local.about')}</p>
           <div className="grid gap-1">
-            <label className="text-xs">Адрес сервера (base URL)</label>
+            <label className="text-xs">{t('chat.local.baseUrl')}</label>
             <input
               type="text"
               value={localUrl}
@@ -645,12 +655,12 @@ function SettingsPanel({ onClose, isBottomPanel }) {
             </div>
           </div>
           <div className="grid gap-1">
-            <label className="text-xs">API-ключ (опционально)</label>
+            <label className="text-xs">{t('chat.local.apiKey')}</label>
             <input
               type="password"
               value={localKey}
               onChange={(e) => setLocalKey(e.target.value)}
-              placeholder="обычно не нужен"
+              placeholder={t('chat.local.apiKeyPlaceholder')}
               className={cx(inputClass, 'text-sm py-1')}
             />
           </div>
@@ -659,16 +669,16 @@ function SettingsPanel({ onClose, isBottomPanel }) {
             onClick={() => loadLocalModels(localUrl, localKey)}
             className="px-2 py-1 text-sm rounded border border-foreground/30 hover:bg-lineBackground w-fit"
           >
-            Загрузить модели
+            {t('chat.local.loadModels')}
           </button>
 
           {/* Параметры генерации локальной модели */}
           <div className="grid gap-2 mt-1 pt-2 border-t border-foreground/15">
-            <p className="text-xs font-medium opacity-80">Параметры генерации</p>
+            <p className="text-xs font-medium opacity-80">{t('chat.local.genParams')}</p>
 
             <div className="grid gap-1">
               <label className="text-xs flex justify-between">
-                <span>Температура</span>
+                <span>{t('chat.local.temperature')}</span>
                 <span className="opacity-60 tabular-nums">{Number(localParams.temperature ?? 0.7).toFixed(2)}</span>
               </label>
               <input
@@ -680,12 +690,12 @@ function SettingsPanel({ onClose, isBottomPanel }) {
                 onChange={(e) => setLP({ temperature: parseFloat(e.target.value) })}
                 className="w-full accent-foreground"
               />
-              <span className="text-[11px] opacity-50">Ниже — точнее и стабильнее, выше — разнообразнее.</span>
+              <span className="text-[11px] opacity-50">{t('chat.local.temperatureHint')}</span>
             </div>
 
             <div className="grid gap-1">
               <label className="text-xs flex justify-between">
-                <span>Макс. токенов ответа</span>
+                <span>{t('chat.params.maxTokens')}</span>
                 <span className="opacity-60 tabular-nums">{localParams.max_tokens ?? 8192}</span>
               </label>
               <input
@@ -697,10 +707,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
                 onChange={(e) => setLP({ max_tokens: Math.max(1, parseInt(e.target.value) || 0) })}
                 className={cx(inputClass, 'text-sm py-1')}
               />
-              <span className="text-[11px] opacity-50">
-                Ограничивает длину ответа. Для «думающих» моделей — потолок размышлений (меньше = быстрее отвечает, не
-                зацикливается).
-              </span>
+              <span className="text-[11px] opacity-50">{t('chat.local.maxTokensHint')}</span>
             </div>
 
             <div className="grid gap-1">
@@ -725,43 +732,37 @@ function SettingsPanel({ onClose, isBottomPanel }) {
                 honored только у gpt-oss. Для «думающих» моделей (Qwen и т.п.) thinking управляется
                 ТОЛЬКО шаблоном промпта в самой LM Studio — см. подсказку ниже. */}
             <div className="grid gap-1">
-              <label className="text-xs">Уровень размышлений (reasoning_effort) · только gpt-oss</label>
+              <label className="text-xs">{t('chat.local.effort')}</label>
               <select
                 value={localParams.reasoning_effort ?? ''}
                 onChange={(e) => setLP({ reasoning_effort: e.target.value })}
                 className={cx(selectClass, 'text-sm py-1')}
               >
-                <option value="">По умолчанию</option>
-                <option value="low">low — быстрее</option>
+                <option value="">{t('chat.local.effortDefault')}</option>
+                <option value="low">{t('chat.local.effortLow')}</option>
                 <option value="medium">medium</option>
-                <option value="high">high — тщательнее</option>
+                <option value="high">{t('chat.local.effortHigh')}</option>
               </select>
             </div>
 
             <details className="text-[11px] rounded-md border border-yellow-500/30 bg-yellow-500/10 p-2">
-              <summary className="cursor-pointer text-yellow-400/90">Модель «думает» бесконечно? (Qwen и др.)</summary>
+              <summary className="cursor-pointer text-yellow-400/90">{t('chat.local.thinkingTitle')}</summary>
               <div className="mt-1 space-y-1 text-yellow-400/80">
-                <p>
-                  LM Studio игнорирует управление размышлениями из API — оно зашито в шаблон промпта модели. Чтобы
-                  выключить thinking:
-                </p>
+                <p>{t('chat.local.thinkingAbout')}</p>
                 <ol className="list-decimal ml-4 space-y-0.5">
                   <li>
-                    LM Studio → <b>My Models</b> → выбери модель.
+                    LM Studio → <b>My Models</b> → {t('chat.local.thinkingStep1')}
                   </li>
                   <li>
                     <b>Inference</b> → <b>Prompt Template (Jinja)</b>.
                   </li>
                   <li>
-                    В начало шаблона добавь:{' '}
+                    {t('chat.local.thinkingStep3')}{' '}
                     <code className="bg-black/30 px-1 rounded">{'{%- set enable_thinking = false %}'}</code>
                   </li>
-                  <li>Перезагрузи модель (Eject → Load).</li>
+                  <li>{t('chat.local.thinkingStep4')}</li>
                 </ol>
-                <p>
-                  Либо возьми не-thinking вариант модели (Instruct). Сэмплинг для non-thinking: temp 0.7, top_p 0.8,
-                  top_k 20.
-                </p>
+                <p>{t('chat.local.thinkingAlt')}</p>
               </div>
             </details>
 
@@ -770,7 +771,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               onClick={() => setLocalParams({ temperature: 0.7, max_tokens: 8192, top_p: 1, reasoning_effort: '' })}
               className="text-[11px] underline opacity-60 hover:opacity-100 w-fit"
             >
-              Сбросить к дефолтам
+              {t('chat.params.reset')}
             </button>
           </div>
         </div>
@@ -779,26 +780,16 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       {/* Бесплатный провайдер (OVHcloud) — инфо-подсказка */}
       {isFree && (
         <div className="p-2 bg-yellow-500/10 rounded-md border border-yellow-500/30 space-y-1">
-          <p className="text-xs text-yellow-400">
-            ✓ Бесплатно, без ключа и регистрации — работает прямо из браузера (OVHcloud AI).
-          </p>
-          <p className="text-xs text-yellow-400/80">
-            Лимит бесплатного тарифа — 2 запроса в минуту. Если упрётесь, подождите ~30 секунд или укажите свой ключ /
-            OpenRouter. Инструменты (автозапуск, правка кода) могут поддерживаться не всеми моделями.
-          </p>
+          <p className="text-xs text-yellow-400">{t('chat.free.about')}</p>
+          <p className="text-xs text-yellow-400/80">{t('chat.free.limit')}</p>
         </div>
       )}
 
       {/* Внешний агент (MCP) — инфо-подсказка */}
       {isMcp && (
         <div className="p-2 bg-blue-500/10 rounded-md border border-blue-500/30 space-y-1">
-          <p className="text-xs text-blue-300">
-            🔌 Сообщения из этого чата уходят внешнему агенту (Claude Desktop / ChatGPT / Cursor), подключённому к
-            MCP-серверу Bulka. Он читает их и отвечает прямо сюда, а также сам пишет код и запускает музыку.
-          </p>
-          <p className="text-xs text-blue-300/70">
-            Только в десктоп-версии. Подключение агента — в «Настройках» (панель MCP). Ключ и модель тут не нужны.
-          </p>
+          <p className="text-xs text-blue-300">{t('chat.mcp.about')}</p>
+          <p className="text-xs text-blue-300/70">{t('chat.mcp.desktopOnly')}</p>
         </div>
       )}
 
@@ -806,7 +797,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       {!isMcp && (
         <div className="grid gap-1">
           <label className="text-xs flex items-center gap-1">
-            Модель
+            {t('chat.model')}
             {isLoadingCurrentModels && <span className="opacity-50">...</span>}
           </label>
           <div className="flex gap-1">
@@ -817,7 +808,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               disabled={isLoadingCurrentModels || currentModels.length === 0}
             >
               {currentModels.length === 0 ? (
-                <option value="">{isLoadingCurrentModels ? 'Загрузка моделей...' : 'Нет моделей'}</option>
+                <option value="">{isLoadingCurrentModels ? t('chat.modelsLoading') : t('chat.noModels')}</option>
               ) : (
                 currentModels.map((m) => (
                   <option key={m.value} value={m.value}>
@@ -839,7 +830,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               }}
               disabled={isLoadingCurrentModels || (!isFree && !currentProviderHasKey())}
               className="px-2 text-sm rounded border border-foreground/30 hover:bg-lineBackground disabled:opacity-30"
-              title="Обновить модели"
+              title={t('chat.refreshModels')}
             >
               ↻
             </button>
@@ -855,7 +846,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
       {/* API Keys - скрываем для free, mcp и local (у local свой ввод адреса/ключа) */}
       {!isFree && !isMcp && !isLocal && (
         <div className="space-y-1">
-          <h4 className="text-xs font-medium">API Ключи</h4>
+          <h4 className="text-xs font-medium">{t('chat.apiKeys')}</h4>
           <div className={isBottomPanel ? 'flex gap-2 flex-wrap' : 'space-y-2'}>
             <div className={cx('grid gap-1', isBottomPanel && 'min-w-[120px] flex-1')}>
               <label className="text-xs flex items-center gap-1">
@@ -901,7 +892,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
                 type="password"
                 value={zaiKey}
                 onChange={(e) => setZaiKey(e.target.value)}
-                placeholder="z.ai ключ..."
+                placeholder={t('chat.zaiPlaceholder')}
                 className={cx(inputClass, 'text-sm py-1')}
               />
             </div>
@@ -918,7 +909,7 @@ function SettingsPanel({ onClose, isBottomPanel }) {
               />
             </div>
           </div>
-          <p className="text-xs opacity-50">Ключи хранятся локально</p>
+          <p className="text-xs opacity-50">{t('chat.keysLocal')}</p>
         </div>
       )}
 
@@ -929,11 +920,11 @@ function SettingsPanel({ onClose, isBottomPanel }) {
           disabled={!currentProviderHasKey() || (!isFree && !isMcp && currentModels.length === 0)}
           className={cx(buttonClass, 'text-sm py-1.5')}
         >
-          {isFree || isMcp || isLocal ? 'Использовать' : currentProviderHasKey() ? 'Сохранить' : 'Введите ключ'}
+          {isFree || isMcp || isLocal ? t('chat.use') : currentProviderHasKey() ? t('chat.save') : t('chat.enterKey')}
         </button>
         {!isFree && !isMcp && !isLocal && (
           <div className="text-xs opacity-70 flex gap-2">
-            <span>Получить:</span>
+            <span>{t('chat.getKey')}</span>
             <a
               href="https://platform.openai.com/api-keys"
               target="_blank"
@@ -1000,7 +991,7 @@ function Message({ message }) {
             className="text-xs opacity-50 hover:opacity-100 mb-2 flex items-center gap-1"
           >
             <span>{showThinking ? '▼' : '▶'}</span>
-            <span>💭 Мысли модели</span>
+            <span>{t('chat.thoughts')}</span>
           </button>
         )}
 
@@ -1181,7 +1172,7 @@ export function ChatTab({ context, isBottomPanel }) {
           </div>
           {chat.hasApiKey && (
             <button onClick={() => setShowSettings(false)} className="text-xs hover:opacity-50">
-              ← Назад
+              {t('chat.back')}
             </button>
           )}
         </div>
@@ -1202,7 +1193,7 @@ export function ChatTab({ context, isBottomPanel }) {
         <div className="flex gap-2">
           {chat.messages.length > 0 && (
             <button onClick={chat.clearMessages} className="text-xs hover:opacity-50">
-              Очистить
+              {t('chat.clear')}
             </button>
           )}
           <button onClick={() => setShowSettings(true)} className="text-xs hover:opacity-50">
@@ -1213,7 +1204,7 @@ export function ChatTab({ context, isBottomPanel }) {
 
       {/* Suggestions - random set, refreshable */}
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-foreground/20">
-        <span className="text-xs opacity-50 mr-1">Идеи:</span>
+        <span className="text-xs opacity-50 mr-1">{t('chat.ideas')}</span>
         {suggestions.map((s, i) => (
           <button
             key={`${suggestionsKey}-${i}`}
@@ -1228,7 +1219,7 @@ export function ChatTab({ context, isBottomPanel }) {
           onClick={() => setSuggestionsKey((k) => k + 1)}
           disabled={pendingMessage}
           className="px-2 py-1 text-xs rounded-md bg-background border border-foreground/30 hover:opacity-50 opacity-50 disabled:opacity-30"
-          title="Показать другие варианты"
+          title={t('chat.moreIdeas')}
         >
           ↻
         </button>
@@ -1239,8 +1230,8 @@ export function ChatTab({ context, isBottomPanel }) {
         {chat.messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="text-4xl mb-4">🎵</div>
-            <h3 className="text-lg font-medium mb-2">Привет!</h3>
-            <p className="text-sm opacity-70 max-w-sm">Я помогу тебе писать музыку. Опиши что хочешь создать.</p>
+            <h3 className="text-lg font-medium mb-2">{t('chat.hello')}</h3>
+            <p className="text-sm opacity-70 max-w-sm">{t('chat.helloText')}</p>
           </div>
         ) : (
           <>
@@ -1250,7 +1241,7 @@ export function ChatTab({ context, isBottomPanel }) {
             {chat.isLoading && !chat.messages[chat.messages.length - 1]?.content && (
               <div className="flex justify-start mb-3">
                 <div className="bg-background border border-foreground/20 rounded-lg px-3 py-2 text-sm opacity-70">
-                  Думаю...
+                  {t('chat.thinking')}
                 </div>
               </div>
             )}
@@ -1266,14 +1257,14 @@ export function ChatTab({ context, isBottomPanel }) {
             <span className="flex-1">{chat.error}</span>
             <button
               onClick={() => {
-                const errorMsg = `Произошла ошибка: ${chat.error}\n\nПомоги разобраться и исправить.`;
+                const errorMsg = t('chat.errorToChat', { error: chat.error });
                 chat.setError(null);
                 chat.sendMessage(errorMsg);
               }}
               className="shrink-0 px-2 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 rounded border border-red-500/50"
-              title="Отправить ошибку в чат для анализа"
+              title={t('chat.sendErrorTitle')}
             >
-              📤 В чат
+              {t('chat.sendError')}
             </button>
           </div>
         </div>
@@ -1320,7 +1311,7 @@ export function ChatTab({ context, isBottomPanel }) {
             </div>
             <div className="flex items-center justify-between gap-2">
               <span className={pendingMessage.type === 'error' ? 'text-orange-400/70' : 'text-blue-400/70'}>
-                Отправка через {countdown}с...
+                {t('chat.sendingIn', { seconds: countdown })}
               </span>
               <div className="flex gap-1">
                 <button
@@ -1332,7 +1323,7 @@ export function ChatTab({ context, isBottomPanel }) {
                       : 'bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/50 text-blue-300',
                   )}
                 >
-                  ✕ Отмена
+                  {t('chat.cancel')}
                 </button>
                 <button
                   onClick={sendPendingMessageNow}
@@ -1343,7 +1334,7 @@ export function ChatTab({ context, isBottomPanel }) {
                       : 'bg-blue-500/30 hover:bg-blue-500/40 border-blue-500/50 text-blue-200',
                   )}
                 >
-                  📤 Сейчас
+                  {t('chat.sendNow')}
                 </button>
               </div>
             </div>
@@ -1358,7 +1349,7 @@ export function ChatTab({ context, isBottomPanel }) {
             value={chat.input}
             onChange={chat.handleInputChange}
             onKeyDown={chat.handleKeyDown}
-            placeholder="Опиши что хочешь создать... (Ctrl+Shift+Enter для отправки)"
+            placeholder={t('chat.placeholder')}
             rows={3}
             className={cx(inputClass, 'resize-none min-h-[72px] max-h-[150px]')}
           />
@@ -1384,7 +1375,7 @@ export function ChatTab({ context, isBottomPanel }) {
       {chat.isPlaying && (
         <div className="px-3 py-1 text-xs text-green-400 border-t border-foreground/10 flex items-center gap-2">
           <span className="animate-pulse">●</span>
-          <span>Музыка играет</span>
+          <span>{t('chat.musicPlaying')}</span>
         </div>
       )}
     </div>

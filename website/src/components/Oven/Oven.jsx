@@ -4,6 +4,7 @@ import { MiniRepl } from '@src/docs/MiniRepl';
 import { PatternLabel } from '@src/repl/components/panel/PatternsTab';
 import { getMetadata } from '@src/metadata_parser.js';
 import cx from '@src/cx.mjs';
+import { t } from '../../i18n/index.mjs';
 
 // Priority authors - their patterns will be shown first
 const PRIORITY_AUTHORS = ['KAIXI', 'neural'];
@@ -103,7 +104,7 @@ function PatternItem({ pattern }) {
             'flex items-center gap-1 px-2 py-1 rounded transition-colors ml-2',
             liked ? 'text-red-400' : 'text-foreground/50 hover:text-red-400',
           )}
-          title={liked ? 'Убрать лайк' : 'Поставить лайк'}
+          title={liked ? t('feed.unlike') : t('feed.like')}
         >
           <HeartIcon filled={liked} />
           <span className="text-sm">{likeCount}</span>
@@ -139,9 +140,9 @@ export function Oven() {
   }, []);
   return (
     <div>
-      <h2 id="featured">Избранные паттерны</h2>
+      <h2 id="featured">{t('oven.featured')}</h2>
       <PatternList patterns={featuredPatterns} />
-      <h2 id="latest">Последние творения</h2>
+      <h2 id="latest">{t('oven.latest')}</h2>
       <PatternList patterns={publicPatterns} />
     </div>
   );

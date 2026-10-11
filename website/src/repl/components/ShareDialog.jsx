@@ -1,6 +1,7 @@
 import { CheckIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import cx from '@src/cx.mjs';
 import { useState, useEffect, useRef } from 'react';
+import { t } from '../../i18n/index.mjs';
 
 export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, isPublic, anchorRef }) {
   const [copied, setCopied] = useState(false);
@@ -56,7 +57,7 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
     >
       {/* Header with title and close */}
       <div className="flex justify-between items-center mb-3">
-        <span className="font-medium">Поделиться</span>
+        <span className="font-medium">{t('share.title')}</span>
         <button onClick={onClose} className="hover:opacity-50 p-1">
           <XMarkIcon className="w-5 h-5" />
         </button>
@@ -64,7 +65,7 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
 
       {/* URL field + copy button */}
       <div className="mb-3">
-        <label className="text-xs opacity-70 mb-1 block">Ссылка на паттерн</label>
+        <label className="text-xs opacity-70 mb-1 block">{t('share.link')}</label>
         <div className="flex gap-2">
           <input
             type="text"
@@ -88,12 +89,12 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
             {copied ? (
               <>
                 <CheckIcon className="w-4 h-4 text-green-500" />
-                <span className="text-sm">Ок</span>
+                <span className="text-sm">{t('share.ok')}</span>
               </>
             ) : (
               <>
                 <ClipboardDocumentIcon className="w-4 h-4" />
-                <span className="text-sm">Копировать</span>
+                <span className="text-sm">{t('share.copy')}</span>
               </>
             )}
           </button>
@@ -115,15 +116,13 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
             )}
           />
           <label htmlFor="share-public-checkbox" className="cursor-pointer select-none">
-            Опубликовать в ленте
+            {t('share.publish')}
           </label>
         </div>
       )}
 
       {/* Info text */}
-      <p className="text-xs opacity-50 mb-4">
-        {isPublic ? 'Паттерн будет виден в ленте сообщества' : 'Паттерн доступен только по ссылке'}
-      </p>
+      <p className="text-xs opacity-50 mb-4">{isPublic ? t('share.publicHint') : t('share.privateHint')}</p>
 
       {/* OK button */}
       <div className="flex justify-end">
@@ -131,7 +130,7 @@ export function ShareToast({ isOpen, onClose, shareUrl, hash, onPublicChange, is
           onClick={onClose}
           className={cx('bg-foreground text-background rounded-md', 'px-4 py-2 hover:opacity-80 transition-opacity')}
         >
-          Готово
+          {t('share.done')}
         </button>
       </div>
     </div>

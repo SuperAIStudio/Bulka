@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { $featuredPatterns /* , loadDBPatterns */ } from '@src/user_pattern_utils.mjs';
 import { nanoid } from 'nanoid';
+import { t } from '../i18n/index.mjs';
 
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
@@ -182,7 +183,7 @@ export async function shareCode(codeToShare, isPublic = true) {
   try {
     // Validate code first
     if (!isValidCode(codeToShare)) {
-      logger('Код слишком короткий или пустой', 'error');
+      logger(t('share.tooShort'), 'error');
       return { success: false, error: 'Invalid code' };
     }
 
@@ -190,7 +191,7 @@ export async function shareCode(codeToShare, isPublic = true) {
     if (lastShared === codeToShare && lastShareHash) {
       const shareUrl = shareBase() + '?' + lastShareHash;
       await copyToClipboard(shareUrl);
-      logger('Ссылка скопирована!', 'highlight');
+      logger(t('share.copied'), 'highlight');
       return {
         success: true,
         shareUrl,
@@ -199,7 +200,7 @@ export async function shareCode(codeToShare, isPublic = true) {
       };
     }
 
-    let shortLinkError = 'неизвестная ошибка';
+    let shortLinkError = t('share.unknownError');
     // Try to create short URL via Supabase
     try {
       // Если есть originHash - обновляем существующую запись (перезапись трека)
@@ -215,7 +216,7 @@ export async function shareCode(codeToShare, isPublic = true) {
           lastShareHash = originHash;
 
           await copyToClipboard(shareUrl);
-          logger('Трек обновлён!', 'highlight');
+          logger(t('share.updated'), 'highlight');
           return {
             success: true,
             shareUrl,
@@ -243,7 +244,7 @@ export async function shareCode(codeToShare, isPublic = true) {
         lastShareHash = existing.hash;
 
         await copyToClipboard(shareUrl);
-        logger('Ссылка скопирована!', 'highlight');
+        logger(t('share.copied'), 'highlight');
         return {
           success: true,
           shareUrl,
@@ -270,7 +271,7 @@ export async function shareCode(codeToShare, isPublic = true) {
         originHash = hash;
 
         await copyToClipboard(shareUrl);
-        logger('Ссылка скопирована!', 'highlight');
+        logger(t('share.copied'), 'highlight');
         return {
           success: true,
           shareUrl,
@@ -282,14 +283,14 @@ export async function shareCode(codeToShare, isPublic = true) {
     } catch (e) {
       shortLinkError = e.message;
     }
-    logger(`Короткая ссылка не создалась (${shortLinkError}) — скопирована длинная, код внутри ссылки`, 'warning');
+    logger(t('share.longLink', { reason: shortLinkError }), 'warning');
 
     // Fallback to long URL (base64 encoded code in hash)
     const longHash = '#' + code2hash(codeToShare);
     const shareUrl = shareBase() + longHash;
 
     await copyToClipboard(shareUrl);
-    logger('Ссылка скопирована!', 'highlight');
+    logger(t('share.copied'), 'highlight');
     return {
       success: true,
       shareUrl,
@@ -298,7 +299,7 @@ export async function shareCode(codeToShare, isPublic = true) {
     };
   } catch (e) {
     console.error(e);
-    logger('Ошибка при создании ссылки', 'error');
+    logger(t('share.failed'), 'error');
     return { success: false, error: e.message };
   }
 }

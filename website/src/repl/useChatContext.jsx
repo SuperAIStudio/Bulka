@@ -12,6 +12,7 @@ import { soundMap } from '@strudel/webaudio';
 import { $strudel_log_history } from './components/useLogger.jsx';
 import { execClientTool } from './agentToolsClient.mjs';
 import { getSelectedCode } from './editorSelection.mjs';
+import { currentLang, t } from '../i18n/index.mjs';
 
 // Бесплатный AI БЕЗ авторизации/ключа: OVHcloud AI Endpoints (OpenAI-совместимый,
 // открытый CORS, стриминг). Проверено из браузера — gpt-oss отвечает и стримит.
@@ -30,7 +31,7 @@ export const FREE_AI_DEFAULT_MODEL = 'gpt-oss-20b';
  * @param {Function} onStatus
  */
 async function* runFreeClientChat(messages, model, subProvider, onStatus) {
-  onStatus?.('🔗 Бесплатный AI (OVHcloud)...');
+  onStatus?.(t('free.connecting'));
   try {
     const resp = await fetch(FREE_AI_ENDPOINT, {
       method: 'POST',
@@ -45,20 +46,19 @@ async function* runFreeClientChat(messages, model, subProvider, onStatus) {
     if (resp.status === 429) {
       yield {
         type: 'error',
-        error:
-          'Бесплатный лимит: не больше 2 запросов в минуту на этот IP. Подожди ~30 секунд и попробуй снова — либо укажи свой ключ / выбери OpenRouter.',
+        error: t('free.rateLimit'),
       };
       return;
     }
     if (!resp.ok || !resp.body) {
       yield {
         type: 'error',
-        error: `Бесплатный AI недоступен (${resp.status}). Попробуй позже или используй свой ключ / OpenRouter.`,
+        error: t('free.unavailable', { status: resp.status }),
       };
       return;
     }
 
-    onStatus?.('📡 Получаю ответ...');
+    onStatus?.(t('free.receiving'));
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -83,7 +83,7 @@ async function* runFreeClientChat(messages, model, subProvider, onStatus) {
       }
     }
   } catch (error) {
-    yield { type: 'error', error: error?.message || 'Ошибка бесплатного AI' };
+    yield { type: 'error', error: error?.message || t('free.error') };
   }
 }
 
@@ -330,7 +330,7 @@ export function useChatContext(replContext) {
     (code) => {
       if (replContext?.editorRef?.current) {
         replContext.editorRef.current.setCode(code);
-        setLastAction('✓ Код применён');
+        setLastAction(t('action.codeApplied'));
       }
     },
     [replContext],
@@ -344,7 +344,7 @@ export function useChatContext(replContext) {
       if (replContext?.editorRef?.current) {
         replContext.editorRef.current.setCode(code);
         replContext.editorRef.current.evaluate();
-        setLastAction('▶ Код применён и запущен');
+        setLastAction(t('action.codeAppliedPlaying'));
       }
     },
     [replContext],
@@ -409,7 +409,7 @@ export function useChatContext(replContext) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: content.trim() }),
         }).catch(() => {});
-        setLastAction('📤 Отправлено внешнему агенту (MCP) — жду ответа…');
+        setLastAction(t('action.sentToMcp'));
         return;
       }
 
@@ -435,7 +435,7 @@ export function useChatContext(replContext) {
                     : '';
 
       if (!isFree && !isLocal && !aiApiKey) {
-        setError(`API ключ для ${aiProvider} не установлен. Откройте настройки и добавьте ключ.`);
+        setError(t('chat.noKey', { provider: aiProvider }));
         return;
       }
 
@@ -486,7 +486,11 @@ export function useChatContext(replContext) {
               : `\n\n## ТЕКУЩИЙ КОД В РЕДАКТОРЕ:\n\`\`\`javascript\n${currentCode}\n\`\`\``
             : '';
 
-          const freeMessages = [{ role: 'system', content: FREE_SYSTEM_PROMPT + codeContext }, ...apiMessages];
+          const languageNote = currentLang() === 'en' ? '\n\nThe Bulka interface is in English: reply in English.' : '';
+          const freeMessages = [
+            { role: 'system', content: FREE_SYSTEM_PROMPT + codeContext + languageNote },
+            ...apiMessages,
+          ];
 
           const editor = replContext?.editorRef?.current;
 
@@ -537,8 +541,8 @@ export function useChatContext(replContext) {
                 }
               }
               editor.setCode(code);
-              actionsExecuted.push('Код установлен');
-              setLastAction('✓ Код применён в редактор');
+              actionsExecuted.push(t('summary.codeSet'));
+              setLastAction(t('action.codeSet'));
             }
 
             // Проверяем маркеры [PLAY]/[STOP]
@@ -547,17 +551,17 @@ export function useChatContext(replContext) {
 
             if (hasStop) {
               editor.stop();
-              actionsExecuted.push('Воспроизведение остановлено');
-              setLastAction('⏹ Воспроизведение остановлено');
+              actionsExecuted.push(t('summary.stopped'));
+              setLastAction(t('action.stopped'));
             } else if (hasPlay) {
               editor.evaluate();
-              actionsExecuted.push('Воспроизведение запущено');
-              setLastAction('▶ Воспроизведение запущено');
+              actionsExecuted.push(t('summary.playing'));
+              setLastAction(t('action.playing'));
             } else if (codeBlocks.length > 0) {
               // Авто-плей если код есть но нет маркеров
               editor.evaluate();
-              actionsExecuted.push('Воспроизведение запущено (авто)');
-              setLastAction('▶ Воспроизведение запущено (авто)');
+              actionsExecuted.push(t('summary.playingAuto'));
+              setLastAction(t('action.playingAuto'));
             }
           }
 
@@ -614,6 +618,7 @@ export function useChatContext(replContext) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               messages: apiMessages,
+              lang: currentLang(),
               apiKey: aiApiKey,
               provider: aiProvider,
               model: aiModel,
@@ -644,7 +649,9 @@ export function useChatContext(replContext) {
             retryCount++;
             if (retryCount <= maxRetries) {
               const delay = baseDelay * Math.pow(2, retryCount - 1); // 2s, 4s, 8s
-              setLastAction(`⏳ Rate limit, повтор через ${delay / 1000}с... (${retryCount}/${maxRetries})`);
+              setLastAction(
+                t('action.rateLimitRetry', { seconds: delay / 1000, attempt: retryCount, max: maxRetries }),
+              );
               await new Promise((resolve) => setTimeout(resolve, delay));
               continue;
             }
@@ -672,7 +679,7 @@ export function useChatContext(replContext) {
           if (message.type === 'thinking_start') {
             isThinking = true;
             thinkingContent = '';
-            setLastAction('🧠 Думаю...');
+            setLastAction(t('action.thinking'));
             continue;
           }
 
@@ -712,7 +719,7 @@ export function useChatContext(replContext) {
               }
               return updated;
             });
-            setLastAction('✓ Готово думать');
+            setLastAction(t('action.doneThinking'));
             continue;
           }
 
@@ -735,7 +742,7 @@ export function useChatContext(replContext) {
               else if (name === 'getConsole') message.consoleResult = res.data;
             } catch (e) {
               setLastAction('⚠ ' + (e?.message || String(e)));
-              actionsExecuted.push('Ошибка инструмента');
+              actionsExecuted.push(t('summary.toolError'));
             }
           }
           // Handle text content
@@ -839,7 +846,7 @@ export function useChatContext(replContext) {
     (errorMessage) => {
       if (!errorMessage || isLoading) return;
       setEditorError(errorMessage);
-      const prompt = `Произошла ошибка при выполнении кода:\n\`\`\`\n${errorMessage}\n\`\`\`\n\nПожалуйста, исправь код.`;
+      const prompt = t('chat.fixCodeError', { error: errorMessage });
       sendMessage(prompt);
     },
     [sendMessage, isLoading],

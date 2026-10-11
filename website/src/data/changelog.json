@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "feat",
+        "typeLabel": "Новые возможности",
+        "emoji": "✨",
+        "description": "every window capability as an MCP tool (49 tools: patterns, share, feed, volume, undo, export WAV, samples, prebake, settings, AI provider, panel, reference, recordings); playMusic reports code errors and locked audio; restore lost selectText/getSelection",
+        "scope": "mcp",
+        "author": "Nerual Dreming",
+        "hash": "9ea24c002"
+      },
+      {
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",

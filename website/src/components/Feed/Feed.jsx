@@ -4,6 +4,7 @@ import { MiniRepl } from '@src/docs/MiniRepl';
 import { PatternLabel } from '@src/repl/components/panel/PatternsTab';
 import { getMetadata } from '@src/metadata_parser.js';
 import cx from '@src/cx.mjs';
+import { t } from '../../i18n/index.mjs';
 
 // Icons
 function HeartIcon({ filled }) {
@@ -51,8 +52,8 @@ function OpenInEditorIcon() {
 
 // Sort options
 const SORT_OPTIONS = {
-  date: 'По дате',
-  likes: 'По популярности',
+  date: t('feed.sortDate'),
+  likes: t('feed.sortLikes'),
 };
 
 // Extract unique genres from patterns
@@ -76,7 +77,7 @@ function FilterBar({ genres, selectedGenre, onGenreChange, sortBy, onSortChange,
       <div>
         <input
           type="text"
-          placeholder="Поиск по названию или автору..."
+          placeholder={t('feed.search')}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full px-4 py-2 bg-background rounded-md text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/30"
@@ -86,7 +87,7 @@ function FilterBar({ genres, selectedGenre, onGenreChange, sortBy, onSortChange,
       <div className="flex flex-wrap items-center gap-4">
         {/* Genre Filter */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-foreground/70">Жанр:</span>
+          <span className="text-sm text-foreground/70">{t('feed.genre')}</span>
           <button
             onClick={() => onGenreChange('')}
             className={cx(
@@ -94,7 +95,7 @@ function FilterBar({ genres, selectedGenre, onGenreChange, sortBy, onSortChange,
               selectedGenre === '' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:opacity-70',
             )}
           >
-            Все
+            {t('feed.all')}
           </button>
           {genres.slice(0, 6).map((genre) => (
             <button
@@ -114,7 +115,7 @@ function FilterBar({ genres, selectedGenre, onGenreChange, sortBy, onSortChange,
 
         {/* Sort */}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm text-foreground/70">Сортировка:</span>
+          <span className="text-sm text-foreground/70">{t('feed.sort')}</span>
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
@@ -140,8 +141,8 @@ function TrackCard({ pattern, onRefresh }) {
   const [copied, setCopied] = useState(false);
 
   const metadata = useMemo(() => getMetadata(pattern.code), [pattern.code]);
-  const title = metadata.title || 'Без названия';
-  const author = Array.isArray(metadata.by) ? metadata.by.join(', ') : metadata.by || 'Аноним';
+  const title = metadata.title || t('feed.untitled');
+  const author = Array.isArray(metadata.by) ? metadata.by.join(', ') : metadata.by || t('feed.anonymous');
   const genres = Array.isArray(metadata.genre) ? metadata.genre : metadata.genre ? [metadata.genre] : [];
 
   const formattedDate = useMemo(() => {
@@ -212,7 +213,7 @@ function TrackCard({ pattern, onRefresh }) {
               </a>
             </h3>
             <p className="text-sm text-foreground/70">
-              от <span className="text-foreground/80">{author}</span>
+              {t('feed.by')} <span className="text-foreground/80">{author}</span>
             </p>
           </div>
           <time className="text-xs text-foreground/50 whitespace-nowrap">{formattedDate}</time>
@@ -248,7 +249,7 @@ function TrackCard({ pattern, onRefresh }) {
                 ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                 : 'bg-background hover:bg-background/80 text-foreground/60 hover:text-red-400',
             )}
-            title={liked ? 'Убрать лайк' : 'Поставить лайк'}
+            title={liked ? t('feed.unlike') : t('feed.like')}
           >
             <HeartIcon filled={liked} />
             <span className="text-sm">{likeCount}</span>
@@ -263,20 +264,20 @@ function TrackCard({ pattern, onRefresh }) {
                 ? 'bg-green-500/20 text-green-400'
                 : 'bg-background hover:bg-background/80 text-foreground/60 hover:text-foreground',
             )}
-            title={copied ? 'Скопировано!' : 'Поделиться'}
+            title={copied ? t('feed.copied') : t('feed.share')}
           >
             {copied ? <CheckIcon /> : <ShareIcon />}
-            {copied && <span className="text-sm">Скопировано</span>}
+            {copied && <span className="text-sm">{t('feed.copiedShort')}</span>}
           </button>
 
           {/* Open in Editor */}
           <button
             onClick={handleEdit}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-background hover:bg-background/80 text-foreground/60 hover:text-foreground transition-colors"
-            title="Открыть в редакторе"
+            title={t('feed.openInEditor')}
           >
             <OpenInEditorIcon />
-            <span className="text-sm hidden sm:inline">Открыть</span>
+            <span className="text-sm hidden sm:inline">{t('feed.open')}</span>
           </button>
         </div>
       </div>
@@ -357,17 +358,15 @@ export function Feed() {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <div className="animate-pulse text-foreground/50">Загрузка треков...</div>
+          <div className="animate-pulse text-foreground/50">{t('feed.loading')}</div>
         </div>
       ) : filteredPatterns.length === 0 ? (
         <div className="text-center py-8 text-foreground/50">
-          {searchQuery || selectedGenre
-            ? 'Треки не найдены. Попробуйте изменить фильтры.'
-            : 'Пока нет опубликованных треков. Будь первым!'}
+          {searchQuery || selectedGenre ? t('feed.noneFiltered') : t('feed.none')}
         </div>
       ) : (
         <>
-          <div className="text-sm text-foreground/50 mb-4">Найдено треков: {filteredPatterns.length}</div>
+          <div className="text-sm text-foreground/50 mb-4">{t('feed.found', { n: filteredPatterns.length })}</div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredPatterns.map((pattern) => (
               <TrackCard key={pattern.id} pattern={pattern} onRefresh={handleRefresh} />

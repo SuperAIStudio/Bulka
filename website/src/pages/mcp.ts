@@ -6,6 +6,7 @@ import { TOOLS_OPENAI, searchAllDocs, getCodeExamples } from './api/chat';
 import { APP_TOOLS, APP_TOOL_NAMES } from '../lib/appToolSchemas.mjs';
 import { recordingsDir } from '../lib/appDir';
 import reference from '../../../doc.json';
+import referenceEn from '../../../doc.en.json';
 import desktopConf from '../../../desktop/src-tauri/tauri.conf.json';
 
 export const prerender = false;
@@ -26,7 +27,16 @@ const SERVER_TOOLS = new Set(['searchDocs', 'getExamples']);
 const REGISTRY_TOOLS = TOOLS_OPENAI.map((t: any) => ({
   name: t.function.name,
   description: t.function.description,
-  inputSchema: t.function.parameters,
+  inputSchema:
+    t.function.name === 'searchDocs'
+      ? {
+          ...t.function.parameters,
+          properties: {
+            ...t.function.parameters.properties,
+            lang: { type: 'string', enum: ['ru', 'en'], description: 'Язык документации, по умолчанию ru' },
+          },
+        }
+      : t.function.parameters,
 }));
 
 // MCP-only тулзы (у встроенного агента их нет по смыслу): удобная связка set+play и двусторонний чат.
@@ -61,7 +71,10 @@ const MCP_SERVER_TOOLS = [
       'Справка по функции Strudel/Bulka (как вкладка «справка»): описание, параметры, синонимы, примеры. Ищет по имени и синонимам.',
     inputSchema: {
       type: 'object',
-      properties: { name: { type: 'string', description: 'Имя функции, например lpf или stackCenter' } },
+      properties: {
+        name: { type: 'string', description: 'Имя функции, например lpf или stackCenter' },
+        lang: { type: 'string', enum: ['ru', 'en'], description: 'Язык справки, по умолчанию ru' },
+      },
       required: ['name'],
     },
   },
@@ -83,10 +96,11 @@ const stripHtml = (s: string = '') =>
     .replace(/&amp;/g, '&')
     .trim();
 
-function lookupReference(name: string): string {
+function lookupReference(name: string, lang: string = 'ru'): string {
   const q = String(name || '').trim();
   if (!q) throw new Error('name пустой');
-  const docs: any[] = (reference as any).docs;
+  if (lang !== 'ru' && lang !== 'en') throw new Error('lang — ru или en');
+  const docs: any[] = ((lang === 'en' ? referenceEn : reference) as any).docs;
   const hit =
     docs.find((d) => d.name === q || d.longname === q) ||
     docs.find((d) => (d.synonyms || []).includes(q)) ||
@@ -98,12 +112,16 @@ function lookupReference(name: string): string {
       .map((d) => d.name);
     throw new Error(`функции «${q}» в справке нет${near.length ? `; похожие: ${near.join(', ')}` : ''}`);
   }
+  const label =
+    lang === 'en'
+      ? { synonyms: 'synonyms', params: 'Parameters', example: 'Example' }
+      : { synonyms: 'синонимы', params: 'Параметры', example: 'Пример' };
   const params = (hit.params || []).map((p: any) => `- ${p.name}: ${stripHtml(p.description)}`).join('\n');
   return [
-    `# ${hit.name}${hit.synonyms?.length ? ` (синонимы: ${hit.synonyms.join(', ')})` : ''}`,
+    `# ${hit.name}${hit.synonyms?.length ? ` (${label.synonyms}: ${hit.synonyms.join(', ')})` : ''}`,
     stripHtml(hit.description),
-    params && `Параметры:\n${params}`,
-    ...(hit.examples || []).map((e: string, i: number) => `Пример ${i + 1}:\n${e}`),
+    params && `${label.params}:\n${params}`,
+    ...(hit.examples || []).map((e: string, i: number) => `${label.example} ${i + 1}:\n${e}`),
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -178,7 +196,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     // --- Серверные тулзы: те же функции, что у встроенного агента (окно не нужно) ---
     if (name === 'searchDocs') {
-      const docs = searchAllDocs(args.query || '', 3);
+      const lang = args.lang ?? 'ru';
+      if (lang !== 'ru' && lang !== 'en') return ok(`Ошибка: lang — ru или en`, true);
+      const docs = searchAllDocs(args.query || '', 3, lang);
       return ok(docs.join('\n\n---\n\n') || 'Ничего не найдено');
     }
     if (name === 'getExamples') {
@@ -186,7 +206,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
     if (name === 'getReference' || name === 'listRecordings') {
       try {
-        return ok(name === 'getReference' ? lookupReference(args.name) : await listRecordings());
+        return ok(name === 'getReference' ? lookupReference(args.name, args.lang) : await listRecordings());
       } catch (e: any) {
         return ok(`Ошибка: ${e.message}`, true);
       }

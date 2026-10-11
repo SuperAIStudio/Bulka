@@ -5,6 +5,7 @@ import ClipboardDocumentIcon from '@heroicons/react/20/solid/ClipboardDocumentIc
 import DocumentPlusIcon from '@heroicons/react/20/solid/DocumentPlusIcon';
 import { getAudioContext, connectToDestination } from '@strudel/webaudio';
 import { isTauri } from '../../../tauri.mjs';
+import { t } from '../../../i18n/index.mjs';
 
 async function copyToClipboard(text) {
   try {
@@ -117,7 +118,7 @@ function ExpandableBank({ name, data, onTrigger, trigRef }) {
             e.stopPropagation();
             copyToClipboard(name);
           }}
-          title="Скопировать название"
+          title={t('sounds.copyName')}
         >
           <ClipboardDocumentIcon className="w-3 h-3" />
         </button>
@@ -127,7 +128,7 @@ function ExpandableBank({ name, data, onTrigger, trigRef }) {
             e.stopPropagation();
             insertIntoEditor(`s("${name}")`);
           }}
-          title="Вставить в редактор"
+          title={t('sounds.insert')}
         >
           <DocumentPlusIcon className="w-3 h-3" />
         </button>
@@ -153,7 +154,7 @@ function ExpandableBank({ name, data, onTrigger, trigRef }) {
                     e.stopPropagation();
                     insertIntoEditor(`s("${name}").n(${index})`);
                   }}
-                  title="Вставить в редактор"
+                  title={t('sounds.insert')}
                 >
                   <DocumentPlusIcon className="w-3 h-3" />
                 </button>
@@ -204,7 +205,7 @@ export function TreeView({ packData, expandedPacks, onTogglePack, renderSound, t
 
               {/* Счётчик: банков / семплов */}
               <span className="text-xs opacity-60 ml-2">
-                {soundCount} банков / {totalSamples} семплов
+                {t('sounds.counts', { banks: soundCount, samples: totalSamples })}
               </span>
             </div>
 
@@ -237,7 +238,7 @@ export function groupSoundsByPack(soundEntries) {
 
   soundEntries.forEach((entry) => {
     const [name, { data }] = entry;
-    let packName = data.pack || 'Другие';
+    let packName = data.pack || t('sounds.otherPack');
 
     if (!packData[packName]) {
       packData[packName] = [];

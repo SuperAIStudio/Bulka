@@ -13,6 +13,7 @@ import { Recorder } from './Recorder';
 import { ShareToast } from './ShareDialog';
 import { shareCode } from '../util.mjs';
 import { updateTrackPublicity } from '@src/user_pattern_utils.mjs';
+import { currentLang, href, pathInLang, t } from '../../i18n/index.mjs';
 import '../Repl.css';
 
 const { BASE_URL } = import.meta.env;
@@ -242,10 +243,10 @@ export function Header({ context, embedded = false }) {
           {!isZen && (
             <div className="space-x-2 flex items-baseline">
               <span style={{ fontFamily: "'Fredoka', sans-serif", color: '#D4A574' }}>bulka</span>
-              <span className="text-sm font-medium">редактор</span>
+              <span className="text-sm font-medium">{t('header.editor')}</span>
               {!isEmbedded && isButtonRowHidden && (
-                <a href={`${baseNoTrailing}/learn`} className="text-sm opacity-25 font-medium">
-                  ДОКИ
+                <a href={href(`${baseNoTrailing}/learn`)} className="text-sm opacity-25 font-medium">
+                  {t('header.docs')}
                 </a>
               )}
             </div>
@@ -261,7 +262,7 @@ export function Header({ context, embedded = false }) {
             <button
               ref={volumeButtonRef}
               onClick={handleMuteToggle}
-              title={isMuted ? 'включить звук' : 'выключить звук'}
+              title={isMuted ? t('header.unmute') : t('header.mute')}
               className="hover:opacity-50 p-1"
             >
               {isMuted ? (
@@ -280,7 +281,7 @@ export function Header({ context, embedded = false }) {
             <button
               onClick={handleUndo}
               disabled={!canUndo}
-              title="отменить (Ctrl+Z)"
+              title={t('header.undo')}
               className={cx('p-1', canUndo ? 'opacity-100 hover:opacity-50' : 'opacity-30 cursor-not-allowed')}
             >
               <ArrowUturnLeftIcon className="w-5 h-5 text-foreground" />
@@ -288,7 +289,7 @@ export function Header({ context, embedded = false }) {
             <button
               onClick={handleRedo}
               disabled={!canRedo}
-              title="повторить (Ctrl+Shift+Z)"
+              title={t('header.redo')}
               className={cx('p-1', canRedo ? 'opacity-100 hover:opacity-50' : 'opacity-30 cursor-not-allowed')}
             >
               <ArrowUturnRightIcon className="w-5 h-5 text-foreground" />
@@ -320,7 +321,7 @@ export function Header({ context, embedded = false }) {
             step="0.01"
             value={volume}
             onChange={handleVolumeChange}
-            title={`Громкость: ${Math.round(volume * 100)}%`}
+            title={t('header.volume', { percent: Math.round(volume * 100) })}
             className="h-24 w-2 bg-foreground/30 rounded-lg appearance-none cursor-pointer accent-foreground"
             style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
           />
@@ -332,7 +333,7 @@ export function Header({ context, embedded = false }) {
           {/* Play/Stop button */}
           <button
             onClick={handleTogglePlay}
-            title={started ? 'стоп' : 'играть'}
+            title={started ? t('header.stop') : t('header.play')}
             className={cx(
               !isEmbedded ? 'p-2' : 'px-2',
               'hover:opacity-50',
@@ -342,35 +343,35 @@ export function Header({ context, embedded = false }) {
             {!pending ? (
               <span className={cx('flex items-center space-x-2')}>
                 {started ? <StopCircleIcon className="w-6 h-6" /> : <PlayCircleIcon className="w-6 h-6" />}
-                {!isEmbedded && <span>{started ? 'стоп' : 'играть'}</span>}
+                {!isEmbedded && <span>{started ? t('header.stop') : t('header.play')}</span>}
               </span>
             ) : (
-              <>загрузка...</>
+              <>{t('header.loading')}</>
             )}
           </button>
           <button
             onClick={handleEvaluate}
-            title="обновить"
+            title={t('header.update')}
             className={cx(
               'flex items-center space-x-1',
               !isEmbedded ? 'p-2' : 'px-2',
               !isDirty || !activeCode ? 'opacity-50' : 'hover:opacity-50',
             )}
           >
-            {!isEmbedded && <span>обновить</span>}
+            {!isEmbedded && <span>{t('header.update')}</span>}
           </button>
           {!isEmbedded && !isDesktopApp && (
             <div className="relative">
               <button
                 ref={shareButtonRef}
-                title="поделиться"
+                title={t('header.share')}
                 className={cx(
                   'cursor-pointer hover:opacity-50 flex items-center space-x-1',
                   !isEmbedded ? 'p-2' : 'px-2',
                 )}
                 onClick={handleShareClick}
               >
-                <span>поделиться</span>
+                <span>{t('header.share')}</span>
               </button>
               <ShareToast
                 isOpen={isShareDialogOpen}
@@ -385,40 +386,49 @@ export function Header({ context, embedded = false }) {
           )}
           {!isEmbedded && (
             <a
-              title="начать новый трек"
-              href={`${baseNoTrailing}/?new`}
+              title={t('header.newTitle')}
+              href={href(`${baseNoTrailing}/?new`)}
               className={cx('hover:opacity-50 flex items-center space-x-1', !isEmbedded ? 'p-2' : 'px-2')}
             >
-              <span>новый</span>
+              <span>{t('header.new')}</span>
             </a>
           )}
           {!isEmbedded && (
             <a
-              title="лента"
-              href={`${baseNoTrailing}/feed`}
+              title={t('header.feed')}
+              href={href(`${baseNoTrailing}/feed`)}
               className={cx('hover:opacity-50 flex items-center space-x-1', !isEmbedded ? 'p-2' : 'px-2')}
             >
-              <span>лента</span>
+              <span>{t('header.feed')}</span>
             </a>
           )}
           {!isEmbedded && (
             <a
-              title="уроки"
-              href={`${baseNoTrailing}/workshop/getting-started/`}
+              title={t('header.learn')}
+              href={href(`${baseNoTrailing}/workshop/getting-started/`)}
               className={cx('hover:opacity-50 flex items-center space-x-1', !isEmbedded ? 'p-2' : 'px-2')}
             >
-              <span>уроки</span>
+              <span>{t('header.learn')}</span>
             </a>
           )}
           {!isEmbedded && (
             <a
-              title="сообщество"
+              title={t('header.community')}
               href="https://t.me/bulka_app"
               target="_blank"
               rel="noopener noreferrer"
               className={cx('hover:opacity-50 flex items-center space-x-1', !isEmbedded ? 'p-2' : 'px-2')}
             >
-              <span>сообщество</span>
+              <span>{t('header.community')}</span>
+            </a>
+          )}
+          {!isEmbedded && (
+            <a
+              title={t('header.switchLangTitle')}
+              href={pathInLang(window.location.pathname, currentLang() === 'en' ? 'ru' : 'en') + window.location.search}
+              className={cx('hover:opacity-50 flex items-center space-x-1', !isEmbedded ? 'p-2' : 'px-2')}
+            >
+              <span>{t('header.switchLang')}</span>
             </a>
           )}
         </div>

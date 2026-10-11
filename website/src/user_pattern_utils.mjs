@@ -4,6 +4,7 @@ import { logger } from '@strudel/core';
 import { nanoid } from 'nanoid';
 import { settingsMap } from './settings.mjs';
 import { confirmDialog, parseJSON, supabase } from './repl/util.mjs';
+import { t } from './i18n/index.mjs';
 
 export let $publicPatterns = atom([]);
 export let $featuredPatterns = atom([]);
@@ -151,7 +152,7 @@ export const userPattern = {
     return this.update(newPattern.id, { ...newPattern.data, code: data.code });
   },
   async clearAll({ confirmed = false } = {}) {
-    if (!confirmed && !(await confirmDialog('Удалить все свои паттерны? Это нельзя отменить.'))) {
+    if (!confirmed && !(await confirmDialog(t('patterns.clearConfirm')))) {
       return null;
     }
     const viewingPatternData = getViewingPatternData();

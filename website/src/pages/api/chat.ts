@@ -19,19 +19,26 @@ interface DocEntry {
   category: string;
   keywords: string[];
   path: string;
+  lang: Lang;
 }
+
+type Lang = 'ru' | 'en';
+
+// Ответ на языке интерфейса: системный промпт общий (русский), язык задаёт приписка к сообщению.
+const REPLY_IN_ENGLISH = '\n\n(The Bulka interface is in English: reply in English.)';
 
 /**
  * Search ALL documentation from pre-built index (70+ MDX files)
  * This works in Vercel serverless because the index is bundled at build time
  */
-export function searchAllDocs(query: string, maxResults: number = 5): string[] {
+export function searchAllDocs(query: string, maxResults: number = 5, lang: Lang = 'ru'): string[] {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter((w) => w.length > 2);
 
   const results: { doc: DocEntry; score: number }[] = [];
 
   for (const doc of docsIndex as DocEntry[]) {
+    if (doc.lang !== lang) continue;
     let score = 0;
 
     // Title match (highest weight)
@@ -1826,24 +1833,6 @@ stack(
  * Execute tool call server-side
  * Returns { result, isClientTool }
  */
-function executeServerTool(name: string, args: any, currentCode: string): { result: string; isClientTool: boolean } {
-  // Server-side tools
-  if (name === 'searchDocs') {
-    // Will be handled async separately
-    return { result: '', isClientTool: false };
-  }
-
-  if (name === 'readCode') {
-    return {
-      result: currentCode || '// Редактор пуст',
-      isClientTool: false,
-    };
-  }
-
-  // Client-side tools
-  return { result: '', isClientTool: true };
-}
-
 /**
  * Build code context string for prepending to first user message
  */
@@ -1879,6 +1868,7 @@ function executeToolCall(
   currentCode: string,
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder,
+  lang: Lang,
 ): { role: string; tool_call_id: string; content: string } {
   let toolArgs: any = {};
   try {
@@ -1901,7 +1891,7 @@ function executeToolCall(
           `data: ${JSON.stringify({ type: 'status', message: `🔍 Ищу в документации: "${toolArgs.query}"...` })}\n\n`,
         ),
       );
-      const docs = searchAllDocs(toolArgs.query || '', 3);
+      const docs = searchAllDocs(toolArgs.query || '', 3, lang);
       return { role: 'tool', tool_call_id: tc.id, content: docs.join('\n\n---\n\n') || 'Ничего не найдено' };
     }
     if (toolName === 'getExamples') {
@@ -1936,6 +1926,7 @@ async function runOpenAIAgent(
   messages: any[],
   currentCode: string,
   selectedCode: string | null,
+  lang: Lang,
 ): Promise<ReadableStream> {
   const codeContext = buildCodeContext(currentCode, selectedCode);
   const encoder = new TextEncoder();
@@ -2106,7 +2097,7 @@ async function runOpenAIAgent(
 
           // Execute each tool call
           for (const tc of toolCalls) {
-            conversationMessages.push(executeToolCall(tc, currentCode, controller, encoder));
+            conversationMessages.push(executeToolCall(tc, currentCode, controller, encoder, lang));
           }
 
           // Continue loop for next response
@@ -2142,6 +2133,7 @@ async function runAnthropicAgent(
   messages: any[],
   currentCode: string,
   selectedCode: string | null,
+  lang: Lang,
 ): Promise<ReadableStream> {
   // Build code context - will be prepended to first user message, NOT system prompt
   // This keeps system prompt static for prompt caching (cached tokens don't count in rate limit)
@@ -2407,7 +2399,7 @@ async function runAnthropicAgent(
                   `data: ${JSON.stringify({ type: 'status', message: `🔍 Ищу в документации: "${toolArgs.query}"...` })}\n\n`,
                 ),
               );
-              const docs = searchAllDocs(toolArgs.query || '', 3);
+              const docs = searchAllDocs(toolArgs.query || '', 3, lang);
               toolResults.push({
                 type: 'tool_result',
                 tool_use_id: block.id,
@@ -2494,6 +2486,7 @@ async function runGeminiAgent(
   messages: any[],
   currentCode: string,
   selectedCode: string | null,
+  lang: Lang,
 ): Promise<ReadableStream> {
   let codeContext = '';
   if (selectedCode) {
@@ -2714,7 +2707,7 @@ async function runGeminiAgent(
                   `data: ${JSON.stringify({ type: 'status', message: `🔍 Ищу в документации: "${toolArgs.query}"...` })}\n\n`,
                 ),
               );
-              const docs = searchAllDocs(toolArgs.query || '', 3);
+              const docs = searchAllDocs(toolArgs.query || '', 3, lang);
               functionResponses.push({
                 functionResponse: {
                   name: toolName,
@@ -2811,6 +2804,7 @@ async function runOpenAICompatibleAgent(
   messages: any[],
   currentCode: string,
   selectedCode: string | null,
+  lang: Lang,
 ): Promise<ReadableStream> {
   const codeContext = buildCodeContext(currentCode, selectedCode);
   const encoder = new TextEncoder();
@@ -3038,7 +3032,7 @@ async function runOpenAICompatibleAgent(
           conversationMessages.push(assistantMessage);
 
           for (const tc of toolCalls) {
-            conversationMessages.push(executeToolCall(tc, currentCode, controller, encoder));
+            conversationMessages.push(executeToolCall(tc, currentCode, controller, encoder, lang));
           }
 
           continue;
@@ -3092,6 +3086,13 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     let { messages, apiKey, provider, model, currentCode, selectedCode, modelParams, strictTools, localBaseUrl } = body;
+    const lang: Lang = body.lang ?? 'ru';
+    if (lang !== 'ru' && lang !== 'en') {
+      return new Response(JSON.stringify({ error: `unknown lang: ${lang}` }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Локальная модель (local) не требует ключ (он опционален).
     if (!apiKey && provider !== 'local') {
@@ -3107,6 +3108,10 @@ export const POST: APIRoute = async ({ request }) => {
       ...m,
       content: truncateMessageContent(m.content, 30000),
     }));
+    if (lang === 'en' && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      messages[messages.length - 1] = { ...last, content: last.content + REPLY_IN_ENGLISH };
+    }
     currentCode = truncateCode(currentCode || '', 50000);
     if (selectedCode) {
       selectedCode = truncateCode(selectedCode, 20000);
@@ -3122,9 +3127,9 @@ export const POST: APIRoute = async ({ request }) => {
     let stream: ReadableStream;
 
     if (provider === 'anthropic') {
-      stream = await runAnthropicAgent(apiKey, model, messages, currentCode || '', selectedCode || null);
+      stream = await runAnthropicAgent(apiKey, model, messages, currentCode || '', selectedCode || null, lang);
     } else if (provider === 'gemini') {
-      stream = await runGeminiAgent(apiKey, model, messages, currentCode || '', selectedCode || null);
+      stream = await runGeminiAgent(apiKey, model, messages, currentCode || '', selectedCode || null, lang);
     } else if (provider === 'zai') {
       stream = await runOpenAICompatibleAgent(
         {
@@ -3137,6 +3142,7 @@ export const POST: APIRoute = async ({ request }) => {
         messages,
         currentCode || '',
         selectedCode || null,
+        lang,
       );
     } else if (provider === 'openrouter') {
       stream = await runOpenAICompatibleAgent(
@@ -3145,7 +3151,7 @@ export const POST: APIRoute = async ({ request }) => {
           providerName: 'OpenRouter',
           headers: {
             Authorization: `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://bulka.app',
+            'HTTP-Referer': new URL(import.meta.env.SITE).origin,
             'X-Title': 'Bulka AI',
           },
           modelParams: modelParams || {},
@@ -3155,6 +3161,7 @@ export const POST: APIRoute = async ({ request }) => {
         messages,
         currentCode || '',
         selectedCode || null,
+        lang,
       );
     } else if (provider === 'local') {
       // Локальная модель (LM Studio / Ollama и пр.) — OpenAI-совместимый сервер на localhost.
@@ -3171,9 +3178,10 @@ export const POST: APIRoute = async ({ request }) => {
         messages,
         currentCode || '',
         selectedCode || null,
+        lang,
       );
     } else {
-      stream = await runOpenAIAgent(apiKey, model, messages, currentCode || '', selectedCode || null);
+      stream = await runOpenAIAgent(apiKey, model, messages, currentCode || '', selectedCode || null, lang);
     }
 
     return new Response(stream, {

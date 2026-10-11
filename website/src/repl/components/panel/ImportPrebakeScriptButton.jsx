@@ -2,6 +2,7 @@ import { errorLogger } from '@strudel/core';
 import { storePrebakeScript } from '../../../settings.mjs';
 import { confirmDialog } from '../../util.mjs';
 import { SpecialActionInput } from '../button/action-button';
+import { t } from '../../../i18n/index.mjs';
 
 function importScript(script, updateEditor) {
   const reader = new FileReader();
@@ -14,7 +15,7 @@ function importScript(script, updateEditor) {
   };
 
   reader.onerror = () => {
-    errorLogger(new Error('не удалось импортировать prebake-скрипт'), 'importScript');
+    errorLogger(new Error(t('prebake.importFailed')), 'importScript');
   };
 }
 
@@ -33,16 +34,9 @@ export function ImportPrebakeScriptButton({ updateEditor }) {
   const handleChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const confirmed = await confirmDialog('Текущий prebake-скрипт будет заменён. Продолжить?');
+    const confirmed = await confirmDialog(t('prebake.replaceConfirm'));
     if (!confirmed) return;
     importScript(file, updateEditor);
   };
-  return (
-    <SpecialActionInput
-      type="file"
-      label="импортировать prebake-скрипт"
-      accept=".strudel,.js"
-      onChange={handleChange}
-    />
-  );
+  return <SpecialActionInput type="file" label={t('prebake.import')} accept=".strudel,.js" onChange={handleChange} />;
 }

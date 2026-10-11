@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { useStore } from '@nanostores/react';
 import cx from '@src/cx.mjs';
 import { $isRecording, $recordingElapsed, beginRecording, endRecording } from '../recordingState.mjs';
+import { t } from '../../i18n/index.mjs';
 
 // Custom record icon component - matches heroicons style
 const RecordIcon = ({ className, filled = false }) => (
@@ -61,7 +62,7 @@ export function Recorder({ started, activeCode }) {
     <div className="flex items-center ml-1">
       <button
         onClick={handleToggleRecording}
-        title={isRecording ? 'остановить запись' : 'начать запись'}
+        title={isRecording ? t('recorder.stop') : t('recorder.start')}
         className={cx(
           'flex items-center space-x-1.5 px-2 py-1 rounded transition-all',
           isRecording ? 'bg-red-500/20 hover:bg-red-500/30' : 'hover:opacity-50',

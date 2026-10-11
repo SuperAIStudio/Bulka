@@ -11,6 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PAGES_DIR = path.join(__dirname, '../src/pages');
 const OUTPUT_FILE = path.join(__dirname, '../src/data/docs-index.json');
 const REFERENCE_FILE = path.join(__dirname, '../../doc.json');
+const REFERENCE_FILE_EN = path.join(__dirname, '../../doc.en.json');
 
 // Directories to exclude from indexing
 const EXCLUDE_DIRS = ['api', 'swatch', 'udels'];
@@ -118,13 +119,13 @@ function buildIndex() {
     try {
       const rawContent = fs.readFileSync(filePath, 'utf-8');
       const content = stripMdxSyntax(rawContent);
-      const relativePath = path.relative(PAGES_DIR, filePath);
+      const relativePath = path.relative(PAGES_DIR, filePath).split(path.sep).join('/');
       const filename = path.basename(filePath);
       const title = extractTitle(rawContent, filename);
       const keywords = extractKeywords(content, title);
 
-      // Determine category from path
-      const pathParts = relativePath.split(path.sep);
+      const lang = relativePath.startsWith('en/') ? 'en' : 'ru';
+      const pathParts = (lang === 'en' ? relativePath.slice(3) : relativePath).split('/');
       const category = pathParts.length > 1 ? pathParts[0] : 'general';
 
       index.push({
@@ -134,6 +135,7 @@ function buildIndex() {
         category,
         keywords,
         path: relativePath,
+        lang,
       });
     } catch (err) {
       throw new Error(`docs index: ${filePath}: ${err.message}`);
@@ -154,11 +156,16 @@ function buildIndex() {
 }
 
 /**
- * Справка функций (doc.json, русская) — чтобы поиск агента знал каждую функцию движка, а не только
- * те, что описаны на страницах доков.
+ * Справка функций (doc.json — русская, doc.en.json — английская) — чтобы поиск агента знал каждую
+ * функцию движка, а не только те, что описаны на страницах доков. На сайте у этих записей нет своей
+ * страницы, поэтому поиск в шапке доков их не показывает.
  */
 function referenceEntries() {
-  const { docs } = JSON.parse(fs.readFileSync(REFERENCE_FILE, 'utf-8'));
+  return [...referenceFor(REFERENCE_FILE, 'ru', 'Параметры'), ...referenceFor(REFERENCE_FILE_EN, 'en', 'Parameters')];
+}
+
+function referenceFor(file, lang, paramsLabel) {
+  const { docs } = JSON.parse(fs.readFileSync(file, 'utf-8'));
   const text = (html = '') =>
     html
       .replace(/<[^>]+>/g, '')
@@ -174,12 +181,13 @@ function referenceEntries() {
       const params = (d.params || []).map((p) => `- ${p.name}: ${text(p.description)}`).join('\n');
       const examples = (d.examples || []).map((e) => '```\n' + e + '\n```').join('\n');
       return {
-        id: `reference-${d.longname}`,
+        id: `reference-${lang}-${d.longname}`,
         title: synonyms.length ? `${d.name} (${synonyms.join(', ')})` : d.name,
-        content: [text(d.description), params && `Параметры:\n${params}`, examples].filter(Boolean).join('\n\n'),
+        content: [text(d.description), params && `${paramsLabel}:\n${params}`, examples].filter(Boolean).join('\n\n'),
         category: 'reference',
         keywords: [d.name, ...synonyms].map((k) => k.toLowerCase()),
         path: `reference#${d.name}`,
+        lang,
       };
     });
 }

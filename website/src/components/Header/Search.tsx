@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import MiniSearch from 'minisearch';
 import { createPortal } from 'react-dom';
 import docsIndex from '../../data/docs-index.json';
+import { currentLang, t } from '../../i18n/index.mjs';
 import './Search.css';
 
 const { BASE_URL } = import.meta.env;
@@ -13,6 +14,7 @@ interface DocEntry {
   title: string;
   content: string;
   category: string;
+  lang: string;
   keywords: string[];
   path: string;
 }
@@ -42,7 +44,8 @@ export default function Search() {
         prefix: true,
       },
     });
-    ms.addAll(docsIndex as DocEntry[]);
+    const lang = currentLang();
+    ms.addAll((docsIndex as DocEntry[]).filter((doc) => doc.lang === lang && doc.category !== 'reference'));
     return ms;
   }, []);
 
@@ -180,13 +183,13 @@ export default function Search() {
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      learn: 'Обучение',
-      workshop: 'Воркшоп',
-      functions: 'Функции',
-      reference: 'Справка',
-      general: 'Общее',
-      technical: 'Технические',
-      blog: 'Блог',
+      learn: t('search.cat.learn'),
+      workshop: t('search.cat.workshop'),
+      functions: t('search.cat.functions'),
+      reference: t('search.cat.reference'),
+      general: t('search.cat.general'),
+      technical: t('search.cat.technical'),
+      blog: t('search.cat.blog'),
     };
     return labels[category] || category;
   };
@@ -235,7 +238,7 @@ export default function Search() {
                   ref={inputRef}
                   type="text"
                   className="search-input-field"
-                  placeholder="Поиск по документации..."
+                  placeholder={t('search.placeholder')}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -258,8 +261,8 @@ export default function Search() {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <p>Ничего не найдено для "{query}"</p>
-                    <p className="search-no-results-hint">Попробуйте другой запрос</p>
+                    <p>{t('search.noResults', { query })}</p>
+                    <p className="search-no-results-hint">{t('search.tryOther')}</p>
                   </div>
                 )}
 
@@ -283,17 +286,17 @@ export default function Search() {
 
                 {!query && (
                   <div className="search-empty-state">
-                    <p>Начните вводить для поиска</p>
+                    <p>{t('search.startTyping')}</p>
                     <div className="search-shortcuts">
                       <div className="search-shortcut">
                         <kbd>↑</kbd>
-                        <kbd>↓</kbd> навигация
+                        <kbd>↓</kbd> {t('search.navigate')}
                       </div>
                       <div className="search-shortcut">
-                        <kbd>Enter</kbd> открыть
+                        <kbd>Enter</kbd> {t('search.open')}
                       </div>
                       <div className="search-shortcut">
-                        <kbd>Esc</kbd> закрыть
+                        <kbd>Esc</kbd> {t('search.close')}
                       </div>
                     </div>
                   </div>
@@ -302,7 +305,7 @@ export default function Search() {
 
               {/* Search Footer */}
               <div className="search-footer">
-                <span className="search-footer-hint">Локальный поиск по документации Bulka</span>
+                <span className="search-footer-hint">{t('search.footer')}</span>
               </div>
             </div>
           </div>,

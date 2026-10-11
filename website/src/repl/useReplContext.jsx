@@ -6,6 +6,7 @@ This program is free software: you can redistribute it and/or modify it under th
 
 import { code2hash, getPerformanceTimeSeconds, logger, silence } from '@strudel/core';
 import { markAudioUnlocked } from './audioUnlock.mjs';
+import { applyReferenceLanguage } from '../i18n/referenceLocale.mjs';
 import { getDrawContext } from '@strudel/draw';
 import { evaluate, transpiler } from '@strudel/transpiler';
 import {
@@ -38,6 +39,7 @@ import { getRandomTune, initCode, loadModules, shareCode } from './util.mjs';
 import './Repl.css';
 import { setInterval, clearInterval } from 'worker-timers';
 import { getMetadata } from '../metadata_parser';
+import { currentLang, t } from '../i18n/index.mjs';
 
 const { latestCode, maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
 let modulesLoading, presets, drawContext, clearCanvas, audioReady;
@@ -72,6 +74,7 @@ export function useReplContext() {
   const init = useCallback(() => {
     // Десктоп (Tauri): чиним blob-«скачивания» (запись/экспорт) — сохраняем через Node-сервер.
     // На вебе (bulka.app) — no-op. Импорт динамический, чтобы не тянуть в SSR.
+    applyReferenceLanguage(currentLang()).catch((e) => logger(`[reference] ${e.message}`, 'error'));
     import('./desktopBridge.mjs')
       .then((m) => m.installDesktopDownloadBridge())
       .catch((e) => console.error('[desktop-bridge]', e));
@@ -169,13 +172,13 @@ export function useReplContext() {
       let code, msg;
       if (isNewSession) {
         code = '';
-        msg = `Новая сессия!`;
+        msg = t('repl.newSession');
       } else if (decoded) {
         code = decoded;
-        msg = `I have loaded the code from the URL.`;
+        msg = t('repl.loadedFromUrl');
       } else if (latestCode) {
         code = latestCode;
-        msg = `Your last session has been loaded!`;
+        msg = t('repl.lastSession');
       } else {
         /* const { code: randomTune, name } = await getRandomTune();
         code = randomTune; */
@@ -280,11 +283,18 @@ stack(
     ]
   )
 ).gain(0.15);`;
-        msg = `Default code has been loaded`;
+        if (currentLang() === 'en') {
+          code = code
+            .replace('БЛОК 1: ВСТУПЛЕНИЕ', 'BLOCK 1: INTRO')
+            .replace('БЛОК 2: ОСНОВНАЯ ЧАСТЬ', 'BLOCK 2: MAIN PART')
+            .replace('БЛОК 3: БРЕЙКДАУН', 'BLOCK 3: BREAKDOWN')
+            .replace('БЛОК 4: КОНЦОВКА', 'BLOCK 4: ENDING');
+        }
+        msg = t('repl.defaultCode');
       }
       editor.setCode(code);
       setDocumentTitle(code);
-      logger(`Добро пожаловать в Bulka! ${msg} Нажми играть или ctrl+enter чтобы запустить!`, 'highlight');
+      logger(t('repl.welcome', { msg }), 'highlight');
     });
 
     editorRef.current = editor;
@@ -343,7 +353,7 @@ stack(
 
   const setDocumentTitle = (code) => {
     const meta = getMetadata(code);
-    document.title = (meta.title ? `${meta.title} - ` : '') + 'Bulka редактор';
+    document.title = (meta.title ? `${meta.title} - ` : '') + t('repl.docTitle');
   };
 
   const handleTogglePlay = async () => {
