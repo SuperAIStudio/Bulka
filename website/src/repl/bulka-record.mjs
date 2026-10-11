@@ -9,9 +9,8 @@
 // Регистрируется в evalScope (website/src/repl/util.mjs) — Bulka-фича, не трогает пакеты движка.
 
 import { register } from '@strudel/core';
-import { startRecording, stopRecording } from '@strudel/webaudio';
+import { beginRecording, endRecording, $isRecording } from './recordingState.mjs';
 
-let _recording = false;
 let _stopTimer = null;
 let _fallbackName;
 
@@ -24,20 +23,15 @@ let _fallbackName;
  */
 export const record = register('record', (name, pat) => {
   return pat.onTrigger((hap, deadline, duration, cps) => {
-    if (!_recording) {
-      _recording = true;
-      try { startRecording(); } catch (e) { /* нет аудио-контекста — игнор */ }
-    }
+    // Через общий стор → в UI загорается индикатор записи (как при кнопке REC).
+    if (!$isRecording.get()) beginRecording();
     // Каждый хап продлевает «дедлайн остановки»: длина хапа + запас полцикла.
     // Когда хапы прекращаются (партия доиграла) — таймер срабатывает и останавливает запись.
     clearTimeout(_stopTimer);
     const marginSec = 0.5 / (cps || 0.5);
     const ms = Math.max(200, (duration + marginSec) * 1000);
     const fname = typeof name === 'string' && name.length ? name : _fallbackName;
-    _stopTimer = setTimeout(() => {
-      _recording = false;
-      try { stopRecording(fname); } catch (e) { /* игнор */ }
-    }, ms);
+    _stopTimer = setTimeout(() => endRecording(fname), ms);
   }, false);
 });
 

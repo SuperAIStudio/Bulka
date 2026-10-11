@@ -48,4 +48,3 @@ export const DRUM_MACHINES = [
   { name: 'AlesisHR16', description: 'Alesis HR-16' },
   { name: 'CasioRZ1', description: 'Casio RZ-1' },
 ];
-

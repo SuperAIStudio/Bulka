@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
+import { useStore } from '@nanostores/react';
 import cx from '@src/cx.mjs';
-import { startRecording, stopRecording } from '@strudel/webaudio';
+import { $isRecording, $recordingElapsed, beginRecording, endRecording } from '../recordingState.mjs';
+import { t } from '../../i18n/index.mjs';
 
 // Custom record icon component - matches heroicons style
 const RecordIcon = ({ className, filled = false }) => (
@@ -42,23 +44,17 @@ function sanitizeFilename(name) {
 }
 
 export function Recorder({ started, activeCode }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  // Единый стор записи: индикатор загорается независимо от источника старта
+  // (кнопка REC, тулзы агента/MCP, метод паттерна .record()).
+  const isRecording = useStore($isRecording);
+  const recordingTime = useStore($recordingElapsed);
 
   const handleToggleRecording = useCallback(() => {
     if (isRecording) {
-      // Stop recording - pass title for filename
       const title = extractTitle(activeCode);
-      const filename = title ? sanitizeFilename(title) : null;
-      stopRecording(filename);
-      setIsRecording(false);
-      setRecordingTime(0);
+      endRecording(title ? sanitizeFilename(title) : undefined);
     } else {
-      // Start recording
-      startRecording((elapsed) => {
-        setRecordingTime(elapsed);
-      });
-      setIsRecording(true);
+      beginRecording();
     }
   }, [isRecording, activeCode]);
 
@@ -66,31 +62,19 @@ export function Recorder({ started, activeCode }) {
     <div className="flex items-center ml-1">
       <button
         onClick={handleToggleRecording}
-        title={isRecording ? 'остановить запись' : 'начать запись'}
+        title={isRecording ? t('recorder.stop') : t('recorder.start')}
         className={cx(
           'flex items-center space-x-1.5 px-2 py-1 rounded transition-all',
-          isRecording
-            ? 'bg-red-500/20 hover:bg-red-500/30'
-            : 'hover:opacity-50',
+          isRecording ? 'bg-red-500/20 hover:bg-red-500/30' : 'hover:opacity-50',
         )}
       >
         {/* REC icon - matches heroicons style */}
         <RecordIcon
           filled={isRecording}
-          className={cx(
-            'w-5 h-5 transition-all',
-            isRecording
-              ? 'text-red-500 animate-pulse'
-              : 'text-foreground',
-          )}
+          className={cx('w-5 h-5 transition-all', isRecording ? 'text-red-500 animate-pulse' : 'text-foreground')}
         />
         {/* Label or timer */}
-        <span
-          className={cx(
-            'text-xs font-mono',
-            isRecording ? 'text-red-400' : 'text-foreground opacity-60',
-          )}
-        >
+        <span className={cx('text-xs font-mono', isRecording ? 'text-red-400' : 'text-foreground opacity-60')}>
           {isRecording ? formatTime(recordingTime) : 'REC'}
         </span>
       </button>

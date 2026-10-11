@@ -6,14 +6,27 @@
 // Серверные тулзы (searchDocs, getExamples) сюда НЕ входят — они чистые функции и считаются
 // на сервере (api/chat.ts). Здесь — только то, что требует окна Bulka.
 
-import { soundMap, startRecording, stopRecording } from '@strudel/webaudio';
+import { soundMap } from '@strudel/webaudio';
+import { AUDIO_LOCKED_MESSAGE, isAudioUnlocked } from './audioUnlock.mjs';
+import { selectText } from './editorSelection.mjs';
 import { $strudel_log_history } from './components/useLogger.jsx';
+import { beginRecording, endRecording } from './recordingState.mjs';
 
 // Список клиентских тулзов (для маршрутизации: клиент vs сервер).
 export const CLIENT_TOOL_NAMES = [
-  'readCode', 'setFullCode', 'editCode', 'appendCode', 'playMusic', 'stopMusic',
-  'highlightCode', 'getAvailablePacks', 'getBankSamples', 'getConsole',
-  'startRecording', 'stopRecording', 'recordSeconds',
+  'readCode',
+  'setFullCode',
+  'editCode',
+  'appendCode',
+  'playMusic',
+  'stopMusic',
+  'highlightCode',
+  'getAvailablePacks',
+  'getBankSamples',
+  'getConsole',
+  'startRecording',
+  'stopRecording',
+  'recordSeconds',
 ];
 
 // Имя файла записи из `// @title` кода.
@@ -52,9 +65,10 @@ function formatPacks() {
   const list = Object.entries(packs)
     .map(([packName, info]) => {
       const bankNames = info.banks.sort();
-      const banksStr = bankNames.length <= 30
-        ? bankNames.join(', ')
-        : bankNames.slice(0, 10).join(', ') + `, ... и ещё ${bankNames.length - 10}`;
+      const banksStr =
+        bankNames.length <= 30
+          ? bankNames.join(', ')
+          : bankNames.slice(0, 10).join(', ') + `, ... и ещё ${bankNames.length - 10}`;
       return `• ${packName} (${info.banks.length} банков, ${info.type}${info.tag ? ', ' + info.tag : ''}):\n  Банки: ${banksStr}`;
     })
     .join('\n\n');
@@ -70,7 +84,10 @@ function formatBank(bankName) {
   if (data.type === 'sample' && data.samples) {
     const samplesList = Array.isArray(data.samples) ? data.samples : Object.values(data.samples).flat();
     let info = `Банк "${bankName}" (${data.pack || 'unknown'}):\nТип: ${data.type}\nСемплов: ${samplesList.length}\nФайлы:\n`;
-    info += samplesList.slice(0, 20).map((s, i) => `  ${i}: ${s}`).join('\n');
+    info += samplesList
+      .slice(0, 20)
+      .map((s, i) => `  ${i}: ${s}`)
+      .join('\n');
     if (samplesList.length > 20) info += `\n  ... и ещё ${samplesList.length - 20} файлов`;
     return info;
   }
@@ -99,7 +116,16 @@ function formatConsole() {
  * @param name канонический tool name (readCode/setFullCode/...)
  * @param args аргументы; для setFullCode можно передать modelTag='provider/model'
  */
-export function execClientTool(editor, name, args = {}) {
+async function evaluateChecked(editor) {
+  if (!isAudioUnlocked()) {
+    return AUDIO_LOCKED_MESSAGE;
+  }
+  await editor.evaluate();
+  const err = editor.repl?.state?.evalError;
+  return err ? `Ошибка в коде: ${err.message || String(err)}` : null;
+}
+
+export async function execClientTool(editor, name, args = {}) {
   if (!editor) throw new Error('Редактор Bulka ещё не готов');
   switch (name) {
     case 'readCode': {
@@ -124,14 +150,17 @@ export function execClientTool(editor, name, args = {}) {
       editor.setCode(cur + (cur.endsWith('\n') ? '' : '\n') + String(args.code ?? ''));
       return { ok: true, message: '✓ Код добавлен', data: 'Код дописан.' };
     }
-    case 'playMusic':
-      editor.evaluate();
-      return { ok: true, message: '▶ Воспроизведение запущено', data: 'Воспроизведение запущено.' };
+    case 'playMusic': {
+      const error = await evaluateChecked(editor);
+      return error
+        ? { ok: false, message: '⚠ Ошибка в коде', data: error }
+        : { ok: true, message: '▶ Воспроизведение запущено', data: 'Воспроизведение запущено.' };
+    }
     case 'stopMusic':
       editor.stop();
       return { ok: true, message: '⏹ Воспроизведение остановлено', data: 'Остановлено.' };
     case 'highlightCode': {
-      const found = editor.selectText?.(args.search);
+      const found = selectText(editor, args.search);
       return found
         ? { ok: true, message: '🔍 Код выделен', data: 'Код выделен.' }
         : { ok: false, message: '⚠ Фрагмент не найден', data: 'Фрагмент не найден.' };
@@ -150,22 +179,24 @@ export function execClientTool(editor, name, args = {}) {
       return { ok: true, message: '📋 Консоль прочитана', data };
     }
     case 'startRecording': {
-      try { startRecording(); } catch (e) { /* нет аудио — игнор */ }
+      beginRecording(); // через общий стор → в UI загорается индикатор записи
       return { ok: true, message: '🔴 Запись начата', data: 'Запись аудио-выхода начата. Останови stopRecording.' };
     }
     case 'stopRecording': {
-      try { stopRecording(titleFilename(editor.code)); } catch (e) { /* игнор */ }
+      endRecording(titleFilename(editor.code));
       return { ok: true, message: '⏹ Запись сохранена', data: 'Запись остановлена и сохранена в WAV.' };
     }
     case 'recordSeconds': {
-      const sec = Math.max(1, Math.min(3600, Number(args.seconds) || 8));
-      editor.evaluate(); // убедиться, что играет
+      const sec = Number(args.seconds);
+      if (!Number.isFinite(sec) || sec < 1 || sec > 3600) {
+        return { ok: false, message: '⚠ Неверная длительность', data: 'seconds — число от 1 до 3600.' };
+      }
+      const error = await evaluateChecked(editor);
+      if (error) return { ok: false, message: '⚠ Ошибка в коде', data: error };
       const fname = titleFilename(editor.code);
-      try {
-        startRecording();
-        setTimeout(() => { try { stopRecording(fname); } catch (e) {} }, sec * 1000);
-      } catch (e) { /* игнор */ }
-      return { ok: true, message: `🔴 Запись ${sec}с`, data: `Записываю ${sec} секунд; WAV сохранится автоматически.` };
+      beginRecording();
+      setTimeout(() => endRecording(fname), sec * 1000);
+      return { ok: true, message: `🔴 Запись ${sec}с`, data: `Записываю ${sec} с; WAV сохранится автоматически.` };
     }
     default:
       throw new Error(`Неизвестный клиентский инструмент: ${name}`);
