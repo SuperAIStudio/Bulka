@@ -13,6 +13,15 @@
         "type": "fix",
         "typeLabel": "Исправления",
         "emoji": "🐛",
+        "description": "statistics start and the consent switch work when the notices script failed to load; the loader reads the choice for each try",
+        "scope": "hub",
+        "author": "Nerual Dreming",
+        "hash": "2d0f90088"
+      },
+      {
+        "type": "fix",
+        "typeLabel": "Исправления",
+        "emoji": "🐛",
         "description": "review findings — local server answers only on its own name, MCP off the site, notices via the proxy, statistics race",
         "scope": null,
         "author": "Nerual Dreming",
