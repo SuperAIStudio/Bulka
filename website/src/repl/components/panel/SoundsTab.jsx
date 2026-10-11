@@ -413,7 +413,7 @@ export function SoundsTab() {
             <ImportSoundsButton onComplete={() => settingsMap.setKey('soundsFilter', 'user')} />
             <p>
               Чтобы импортировать звуки, они должны находиться{' '}
-              <a href={`${baseNoTrailing}/learn/samples/#from-disk-via-import-sounds-folder`} target="_blank">
+              <a href={`${baseNoTrailing}/learn/samples/#с-диска-кнопка-импортировать-папку-звуков`} target="_blank">
                 в папке или подпапке
               </a>
               . Лучший способ — загрузить папку "samples", содержащую подпапки с отдельными звуками или
@@ -437,7 +437,7 @@ export function SoundsTab() {
             </p>
             <p>
               Больше информации и другие способы использования своих звуков —{' '}
-              <a href={`${baseNoTrailing}/learn/samples/#from-disk-via-import-sounds-folder`} target="_blank">
+              <a href={`${baseNoTrailing}/learn/samples/#с-диска-кнопка-импортировать-папку-звуков`} target="_blank">
                 в документации
               </a>
               !
