@@ -10,6 +10,15 @@
     "dateFormatted": "11 октября 2026",
     "changes": [
       {
+        "type": "feat",
+        "typeLabel": "Новые возможности",
+        "emoji": "✨",
+        "description": "anonymous statistics with consent and hub news on site and desktop — Rust-client report format (scrub, limits, cascade), first-run consent panel and settings toggle with preview, counters for pattern runs, recordings, exports, shares, agent replies; notices.js with impressions only after consent; recording errors surfaced; README statistics and English sections",
+        "scope": "hub",
+        "author": "Nerual Dreming",
+        "hash": "a719dc037"
+      },
+      {
         "type": "docs",
         "typeLabel": "Документация",
         "emoji": "📚",
